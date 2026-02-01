@@ -11,4 +11,5 @@ export { QuizPopup } from './QuizPopup';
 export { LearnPage } from './LearnPage';
 export { ModuleContent } from './ModuleContent';
 export { FormulaCheatSheet } from './FormulaCheatSheet';
+export { LandingPage } from './LandingPage';
 

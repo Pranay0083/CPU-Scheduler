@@ -363,7 +363,7 @@ export function formatBurstPattern(bursts: Burst[]): string {
 // ============================================================
 
 // App navigation pages
-export type AppPage = 'SIMULATOR' | 'LEARN';
+export type AppPage = 'HOME' | 'SIMULATOR' | 'LEARN';
 
 // Learning module IDs
 export type LearningModuleId =

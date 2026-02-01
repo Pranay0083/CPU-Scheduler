@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { SchedulerProvider } from './context/SchedulerContext';
-import type { AppPage } from './types';
+import { SchedulerProvider, useScheduler } from './context/SchedulerContext';
+import type { AppPage, Algorithm } from './types';
 import {
   ControlPanel,
   ProcessForm,
@@ -13,38 +13,94 @@ import {
   Scorecard,
   QuizPopup,
   LearnPage,
+  LandingPage,
 } from './components';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<AppPage>('SIMULATOR');
+// Preset configurations for quick-start demos
+const DEMO_PRESETS = {
+  'convoy': {
+    algorithm: 'FCFS' as Algorithm,
+    processes: [
+      { name: 'P1 (Long)', arrivalTime: 0, burst: 12, priority: 1 },
+      { name: 'P2 (Short)', arrivalTime: 1, burst: 2, priority: 1 },
+      { name: 'P3 (Short)', arrivalTime: 2, burst: 2, priority: 1 },
+      { name: 'P4 (Short)', arrivalTime: 3, burst: 2, priority: 1 },
+    ],
+  },
+  'rr-quantum': {
+    algorithm: 'ROUND_ROBIN' as Algorithm,
+    processes: [
+      { name: 'P1', arrivalTime: 0, burst: 8, priority: 1 },
+      { name: 'P2', arrivalTime: 1, burst: 4, priority: 1 },
+      { name: 'P3', arrivalTime: 2, burst: 6, priority: 1 },
+    ],
+  },
+  'starvation': {
+    algorithm: 'PRIORITY_NON_PREEMPTIVE' as Algorithm,
+    processes: [
+      { name: 'High (P1)', arrivalTime: 0, burst: 4, priority: 1 },
+      { name: 'High (P2)', arrivalTime: 2, burst: 4, priority: 1 },
+      { name: 'High (P3)', arrivalTime: 4, burst: 4, priority: 2 },
+      { name: 'LOW (Starve)', arrivalTime: 1, burst: 3, priority: 10 },
+    ],
+  },
+};
+
+function AppContent() {
+  const [currentPage, setCurrentPage] = useState<AppPage>('HOME');
   const [darkMode, setDarkMode] = useState<boolean>(() => {
-    // Check localStorage or system preference
     const saved = localStorage.getItem('cpu-scheduler-dark-mode');
     if (saved !== null) return saved === 'true';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+  const { dispatch } = useScheduler();
 
-  // Apply dark mode class to document
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', darkMode);
     localStorage.setItem('cpu-scheduler-dark-mode', String(darkMode));
   }, [darkMode]);
 
+  const handleNavigate = (page: 'SIMULATOR' | 'LEARN') => {
+    setCurrentPage(page);
+  };
+
+  const handleLoadPreset = (presetName: string) => {
+    const preset = DEMO_PRESETS[presetName as keyof typeof DEMO_PRESETS];
+    if (preset) {
+      dispatch({ type: 'SET_ALGORITHM', payload: preset.algorithm });
+      dispatch({ type: 'CLEAR_PROCESSES' });
+      // Add processes from preset
+      preset.processes.forEach((p) => {
+        dispatch({
+          type: 'ADD_PROCESS',
+          payload: {
+            name: p.name,
+            arrivalTime: p.arrivalTime,
+            priority: p.priority,
+            bursts: [{ type: 'CPU', duration: p.burst, remaining: p.burst }],
+            color: '',
+          },
+        });
+      });
+    }
+  };
+
   const handleNavigateToSimulator = (algorithm?: string, _preset?: string) => {
     setCurrentPage('SIMULATOR');
-    // If algorithm specified, could set it in context (future enhancement)
-    console.log('Navigate to simulator with algorithm:', algorithm);
+    if (algorithm) {
+      dispatch({ type: 'SET_ALGORITHM', payload: algorithm as Algorithm });
+    }
   };
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
   return (
-    <SchedulerProvider>
-      <div className={`app ${darkMode ? 'dark' : 'light'}`}>
-        {/* Header */}
+    <div className={`app ${darkMode ? 'dark' : 'light'}`}>
+      {/* Header - Only show on SIMULATOR and LEARN pages */}
+      {currentPage !== 'HOME' && (
         <header className="app-header">
           <div className="header-content">
-            <h1 className="app-title">
+            <h1 className="app-title" onClick={() => setCurrentPage('HOME')} style={{ cursor: 'pointer' }}>
               <span className="title-icon">⚡</span>
               CPU Scheduler Visualizer
             </h1>
@@ -53,7 +109,6 @@ function App() {
             </p>
           </div>
 
-          {/* Page Navigation Tabs */}
           <nav className="page-nav">
             <button
               className={`nav-tab ${currentPage === 'SIMULATOR' ? 'active' : ''}`}
@@ -71,72 +126,76 @@ function App() {
             </button>
           </nav>
         </header>
+      )}
 
-        {/* Conditional Page Rendering */}
-        {currentPage === 'SIMULATOR' ? (
-          <>
-            {/* Simulator Layout */}
-            <main className="app-main">
-              {/* Left Sidebar - Controls */}
-              <aside className="sidebar-left">
-                <ControlPanel />
-              </aside>
+      {/* Page Rendering */}
+      {currentPage === 'HOME' ? (
+        <LandingPage
+          onNavigate={handleNavigate}
+          onLoadPreset={handleLoadPreset}
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+        />
+      ) : currentPage === 'SIMULATOR' ? (
+        <>
+          <main className="app-main">
+            <aside className="sidebar-left">
+              <ControlPanel />
+            </aside>
 
-              {/* Center Content */}
-              <div className="main-content">
-                {/* Top Section - Process Input & Metrics */}
-                <section className="top-section">
-                  <div className="top-left">
-                    <ProcessForm />
-                    <PredictionTable />
-                    <ProcessTable />
-                  </div>
-                  <div className="top-right">
-                    <MetricsDashboard />
-                  </div>
-                </section>
+            <div className="main-content">
+              <section className="top-section">
+                <div className="top-left">
+                  <ProcessForm />
+                  <PredictionTable />
+                  <ProcessTable />
+                </div>
+                <div className="top-right">
+                  <MetricsDashboard />
+                </div>
+              </section>
 
-                {/* Middle Section - Gantt Chart */}
-                <section className="middle-section">
-                  <GanttChart />
-                </section>
+              <section className="middle-section">
+                <GanttChart />
+              </section>
 
-                {/* Bottom Section - Queues */}
-                <section className="bottom-section">
-                  <ProcessQueue />
-                </section>
-              </div>
+              <section className="bottom-section">
+                <ProcessQueue />
+              </section>
+            </div>
 
-              {/* Right Sidebar - Kernel Log */}
-              <aside className="sidebar-right">
-                <KernelLog />
-              </aside>
-            </main>
+            <aside className="sidebar-right">
+              <KernelLog />
+            </aside>
+          </main>
 
-            {/* Footer */}
-            <footer className="app-footer">
-              <p>
-                Algorithms: FCFS • SJF • SRTF • Round Robin • Priority • MLFQ |
-                Multi-Core Support • I/O Bursts • Priority Aging
-              </p>
-            </footer>
+          <footer className="app-footer">
+            <p>
+              Algorithms: FCFS • SJF • SRTF • Round Robin • Priority • MLFQ |
+              Multi-Core Support • I/O Bursts • Priority Aging
+            </p>
+          </footer>
 
-            {/* Overlays for Test Mode */}
-            <Scorecard />
-            <QuizPopup />
-          </>
-        ) : (
-          /* Learn Page */
-          <LearnPage
-            onNavigateToSimulator={handleNavigateToSimulator}
-            darkMode={darkMode}
-            onToggleDarkMode={toggleDarkMode}
-          />
-        )}
-      </div>
+          <Scorecard />
+          <QuizPopup />
+        </>
+      ) : (
+        <LearnPage
+          onNavigateToSimulator={handleNavigateToSimulator}
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+        />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <SchedulerProvider>
+      <AppContent />
     </SchedulerProvider>
   );
 }
 
 export default App;
-
