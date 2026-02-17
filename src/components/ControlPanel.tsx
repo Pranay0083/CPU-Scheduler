@@ -5,7 +5,6 @@ import type { Algorithm, CoreCount, SimulationSpeed, InteractionMode } from '../
 const INTERACTION_MODES: { value: InteractionMode; label: string; icon: string }[] = [
     { value: 'NORMAL', label: 'Normal', icon: '▶️' },
     { value: 'PREDICT_VERIFY', label: 'Predict & Verify', icon: '📝' },
-    { value: 'QUIZ', label: 'Quiz Mode', icon: '❓' },
 ];
 
 const ALGORITHMS: { value: Algorithm; label: string }[] = [
@@ -89,38 +88,34 @@ export function ControlPanel() {
     };
 
     return (
-        <div className="control-panel">
+        <div className="glass-panel flex flex-col gap-4 text-sm">
             {/* Simulation Mode Selector */}
-            <div className="control-section mode-section">
-                <h3 className="control-title">Mode</h3>
-                <div className="mode-buttons">
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Mode</h3>
+                <div className="grid grid-cols-2 gap-2">
                     {INTERACTION_MODES.map(mode => (
                         <button
                             key={mode.value}
                             onClick={() => setInteractionMode(mode.value)}
                             disabled={isRunning}
-                            className={`mode-button ${state.interactionMode === mode.value ? 'active' : ''}`}
+                            className={`p-2 rounded-lg transition-all flex flex-col items-center gap-1 border ${state.interactionMode === mode.value ? 'bg-accent-primary/20 border-accent-primary/50 text-accent-primary' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
                             title={mode.label}
                         >
-                            <span className="mode-icon">{mode.icon}</span>
-                            <span className="mode-label">{mode.label}</span>
+                            <span className="text-xl">{mode.icon}</span>
+                            <span className="text-xs font-medium">{mode.label}</span>
                         </button>
                     ))}
                 </div>
-                {state.interactionMode === 'QUIZ' && (
-                    <div className="mode-score">
-                        Score: <strong>{state.quizState.totalPoints}</strong> pts
-                    </div>
-                )}
             </div>
 
-            <div className="control-section">
-                <h3 className="control-title">Algorithm</h3>
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Algorithm</h3>
                 <select
                     value={state.algorithm}
                     onChange={(e) => setAlgorithm(e.target.value as Algorithm)}
                     disabled={isRunning}
-                    className="control-select"
+                    className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none"
+                    title="Select Scheduling Algorithm"
                 >
                     {ALGORITHMS.map(algo => (
                         <option key={algo.value} value={algo.value}>
@@ -130,15 +125,15 @@ export function ControlPanel() {
                 </select>
             </div>
 
-            <div className="control-section">
-                <h3 className="control-title">CPU Cores</h3>
-                <div className="core-buttons">
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">CPU Cores</h3>
+                <div className="flex gap-2">
                     {[1, 2, 4].map(count => (
                         <button
                             key={count}
                             onClick={() => setCoreCount(count as CoreCount)}
                             disabled={isRunning}
-                            className={`core-button ${state.coreCount === count ? 'active' : ''}`}
+                            className={`flex-1 py-1 px-2 rounded transition border ${state.coreCount === count ? 'bg-accent-primary text-white border-accent-primary' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
                         >
                             {count}
                         </button>
@@ -147,8 +142,8 @@ export function ControlPanel() {
             </div>
 
             {(state.algorithm === 'ROUND_ROBIN' || state.algorithm === 'MLFQ') && (
-                <div className="control-section">
-                    <h3 className="control-title">Time Quantum</h3>
+                <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Time Quantum</h3>
                     <input
                         type="number"
                         min="1"
@@ -156,19 +151,21 @@ export function ControlPanel() {
                         value={state.timeQuantum}
                         onChange={(e) => setTimeQuantum(Math.max(1, parseInt(e.target.value) || 1))}
                         disabled={isRunning}
-                        className="control-input"
+                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none"
+                        placeholder="Time Quantum"
+                        title="Set Time Quantum"
                     />
                 </div>
             )}
 
-            <div className="control-section">
-                <h3 className="control-title">Speed</h3>
-                <div className="speed-buttons">
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Speed</h3>
+                <div className="flex gap-2">
                     {[0.5, 1, 2, 4].map(speed => (
                         <button
                             key={speed}
                             onClick={() => setSpeed(speed as SimulationSpeed)}
-                            className={`speed-button ${state.speed === speed ? 'active' : ''}`}
+                            className={`flex-1 py-1 px-2 rounded transition border ${state.speed === speed ? 'bg-accent-primary text-white border-accent-primary' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
                         >
                             {speed}x
                         </button>
@@ -176,28 +173,31 @@ export function ControlPanel() {
                 </div>
             </div>
 
-            <div className="control-section">
-                <label className="aging-label">
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <label className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded transition">
                     <input
                         type="checkbox"
                         checked={state.agingEnabled}
                         onChange={(e) => toggleAging(e.target.checked)}
                         disabled={isRunning}
+                        className="w-4 h-4 accent-accent-primary"
+                        title="Enable Priority Aging"
                     />
                     <span>Priority Aging</span>
                 </label>
             </div>
 
-            <div className="control-section">
-                <h3 className="control-title">Presets</h3>
+            <div className="flex flex-col gap-2 border-b border-border-main pb-4">
+                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Presets</h3>
                 <select
                     onChange={(e) => {
                         const preset = PRESETS.find(p => p.name === e.target.value);
                         if (preset) loadPreset(preset);
                     }}
                     disabled={isRunning}
-                    className="control-select"
+                    className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none"
                     defaultValue=""
+                    title="Load Preset Scenario"
                 >
                     <option value="" disabled>Load preset...</option>
                     {PRESETS.map(preset => (
@@ -208,11 +208,11 @@ export function ControlPanel() {
                 </select>
             </div>
 
-            <div className="control-section playback-controls">
+            <div className="grid grid-cols-2 gap-2 mt-2">
                 <button
                     onClick={isRunning ? pause : start}
                     disabled={!canStart && !isRunning}
-                    className={`control-button ${isRunning ? 'pause' : 'play'}`}
+                    className={`col-span-2 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 border ${isRunning ? 'bg-accent-warning/20 border-accent-warning text-accent-warning hover:bg-accent-warning/30' : 'bg-accent-success/20 border-accent-success text-accent-success hover:bg-accent-success/30 disabled:opacity-50 disabled:cursor-not-allowed'}`}
                 >
                     {isRunning ? '⏸ Pause' : '▶ Play'}
                 </button>
@@ -220,22 +220,22 @@ export function ControlPanel() {
                 <button
                     onClick={step}
                     disabled={isRunning || !canStart}
-                    className="control-button step"
+                    className="py-2 rounded-lg font-bold transition flex items-center justify-center gap-1 border bg-white/5 border-border-main hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     ⏭ Step
                 </button>
 
                 <button
                     onClick={reset}
-                    className="control-button reset"
+                    className="py-2 rounded-lg font-bold transition flex items-center justify-center gap-1 border bg-white/5 border-border-main hover:bg-white/10 hover:text-accent-error"
                 >
                     ↺ Reset
                 </button>
             </div>
 
-            <div className="clock-display">
-                <span className="clock-label">Clock</span>
-                <span className="clock-value">{state.clock}</span>
+            <div className="mt-4 flex flex-col items-center justify-center p-4 bg-bg-secondary/50 rounded-lg border border-border-main">
+                <span className="text-xs text-text-secondary uppercase tracking-widest mb-1">Clock</span>
+                <span className="text-4xl font-mono font-bold text-accent-info">{state.clock}</span>
             </div>
         </div>
     );

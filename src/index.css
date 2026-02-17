@@ -1,6 +1,6 @@
-/* Font Import - must be first */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
 
+<<<<<<< Updated upstream
 /* ============================================================
    CPU Scheduler Visualizer - Dark Theme with Glassmorphism
    ============================================================ */
@@ -79,9 +79,45 @@
 
 html {
   font-size: 14px;
+=======
+@theme {
+  /* Colors */
+  --color-bg-primary: #0f0f1a;
+  --color-bg-secondary: #1a1a2e;
+  --color-bg-tertiary: #16213e;
+  --color-bg-card: rgba(26, 26, 46, 0.8);
+  --color-bg-glass: rgba(255, 255, 255, 0.05);
+
+  --color-text-primary: #e4e4e7;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+
+  --color-accent-primary: #6366f1;
+  --color-accent-secondary: #8b5cf6;
+  --color-accent-success: #10b981;
+  --color-accent-warning: #f59e0b;
+  --color-accent-error: #ef4444;
+  --color-accent-info: #3b82f6;
+
+  --color-border-main: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.2);
+
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+
+  /* Animations */
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+>>>>>>> Stashed changes
 }
 
+/* Base Styles */
 body {
+<<<<<<< Updated upstream
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -111,14 +147,27 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+=======
+  @apply bg-bg-primary text-text-primary min-h-screen text-[14px];
+  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-tertiary) 100%);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.header-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
+/* Common Utility Classes for Glassmorphism */
+@utility glass-panel {
+  @apply bg-bg-glass backdrop-blur-md border border-border-main rounded-xl p-4;
 }
 
+@utility glass-header {
+  @apply bg-bg-glass backdrop-blur-md border-b border-border-main px-8 sticky top-0 z-50 flex items-center h-[80px];
+>>>>>>> Stashed changes
+}
+
+@utility glass-footer {
+  @apply bg-bg-glass backdrop-blur-md border-t border-border-main flex items-center justify-center text-text-muted text-xs h-[40px];
+}
+
+<<<<<<< Updated upstream
 .app-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -3479,3 +3528,27 @@ body {
     display: none;
   }
 }
+=======
+/* Scrollbar Utility */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-primary) var(--color-bg-secondary);
+}
+
+@utility scrollbar-webkit {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--color-bg-primary);
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-accent-primary);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent-secondary);
+  }
+}
+>>>>>>> Stashed changes
