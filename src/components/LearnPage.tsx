@@ -129,13 +129,13 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
     };
 
     return (
-        <div className="learn-page">
+        <div className="flex h-[calc(100vh-80px)] overflow-hidden">
             {/* Sidebar Navigation */}
-            <aside className="learn-sidebar">
-                <div className="learn-sidebar-header">
-                    <h3>📖 Learning Modules</h3>
+            <aside className="w-72 bg-[#16162a] border-r border-white/10 flex flex-col shrink-0 z-20">
+                <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                    <h3 className="font-bold text-white/90 uppercase tracking-wider text-sm">📖 Learning Modules</h3>
                     <button
-                        className="theme-toggle"
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 transition-colors"
                         onClick={onToggleDarkMode}
                         title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
@@ -143,22 +143,25 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
                     </button>
                 </div>
 
-                <nav className="learn-nav">
+                <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 custom-scrollbar">
                     {MODULES.map((module) => (
                         <button
                             key={module.id}
-                            className={`learn-nav-item ${activeModule === module.id ? 'active' : ''}`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all w-full text-left
+                                ${activeModule === module.id 
+                                    ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20' 
+                                    : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}
                             onClick={() => scrollToModule(module.id)}
                         >
-                            <span className="nav-icon">{module.icon}</span>
-                            <span className="nav-title">{module.title}</span>
+                            <span className="text-lg">{module.icon}</span>
+                            <span>{module.title}</span>
                         </button>
                     ))}
                 </nav>
 
-                <div className="learn-sidebar-footer">
+                <div className="p-4 border-t border-white/5 bg-[#1a1a2e]">
                     <button
-                        className="btn-try-simulator"
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-bold shadow-lg hover:shadow-accent-primary/25 transition-all transform hover:-translate-y-1 active:translate-y-0 text-sm"
                         onClick={() => onNavigateToSimulator()}
                     >
                         ⚡ Open Simulator
@@ -167,92 +170,98 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
             </aside>
 
             {/* Main Content */}
-            <main className="learn-content" ref={contentRef}>
-                {/* Module 1: The Basics */}
-                <section
-                    id="basics"
-                    className="learn-module"
-                    ref={(el) => registerModuleRef('basics', el)}
-                >
-                    <ModuleContent
-                        moduleId="basics"
-                        title="Module 1: The Basics"
-                        icon="📚"
-                        hoveredTerm={hoveredTerm}
-                        setHoveredTerm={setHoveredTerm}
-                        getTermDefinition={getTermDefinition}
-                        onNavigateToSimulator={onNavigateToSimulator}
-                    />
-                </section>
+            <main className="flex-1 overflow-y-auto scroll-smooth relative p-8 md:p-12 custom-scrollbar bg-[#0f0f1d]" ref={contentRef}>
+                <div className="max-w-4xl mx-auto space-y-24 pb-24">
+                    {/* Module 1: The Basics */}
+                    <section
+                        id="basics"
+                        className="scroll-mt-8"
+                        ref={(el) => registerModuleRef('basics', el)}
+                    >
+                        <ModuleContent
+                            moduleId="basics"
+                            title="Module 1: The Basics"
+                            icon="📚"
+                            hoveredTerm={hoveredTerm}
+                            setHoveredTerm={setHoveredTerm}
+                            getTermDefinition={getTermDefinition}
+                            onNavigateToSimulator={onNavigateToSimulator}
+                        />
+                    </section>
 
-                {/* Module 2: Scheduling Criteria */}
-                <section
-                    id="scheduling-criteria"
-                    className="learn-module"
-                    ref={(el) => registerModuleRef('scheduling-criteria', el)}
-                >
-                    <ModuleContent
-                        moduleId="scheduling-criteria"
-                        title="Module 2: Scheduling Criteria"
-                        icon="📊"
-                        hoveredTerm={hoveredTerm}
-                        setHoveredTerm={setHoveredTerm}
-                        getTermDefinition={getTermDefinition}
-                        onNavigateToSimulator={onNavigateToSimulator}
-                    />
-                </section>
+                    {/* Module 2: Scheduling Criteria */}
+                    <section
+                        id="scheduling-criteria"
+                        className="scroll-mt-8"
+                        ref={(el) => registerModuleRef('scheduling-criteria', el)}
+                    >
+                        <ModuleContent
+                            moduleId="scheduling-criteria"
+                            title="Module 2: Scheduling Criteria"
+                            icon="📊"
+                            hoveredTerm={hoveredTerm}
+                            setHoveredTerm={setHoveredTerm}
+                            getTermDefinition={getTermDefinition}
+                            onNavigateToSimulator={onNavigateToSimulator}
+                        />
+                    </section>
 
-                {/* Module 3: Preemption */}
-                <section
-                    id="preemption"
-                    className="learn-module"
-                    ref={(el) => registerModuleRef('preemption', el)}
-                >
-                    <ModuleContent
-                        moduleId="preemption"
-                        title="Module 3: Non-Preemptive vs Preemptive"
-                        icon="🔄"
-                        hoveredTerm={hoveredTerm}
-                        setHoveredTerm={setHoveredTerm}
-                        getTermDefinition={getTermDefinition}
-                        onNavigateToSimulator={onNavigateToSimulator}
-                    />
-                </section>
+                    {/* Module 3: Preemption */}
+                    <section
+                        id="preemption"
+                        className="scroll-mt-8"
+                        ref={(el) => registerModuleRef('preemption', el)}
+                    >
+                        <ModuleContent
+                            moduleId="preemption"
+                            title="Module 3: Non-Preemptive vs Preemptive"
+                            icon="🔄"
+                            hoveredTerm={hoveredTerm}
+                            setHoveredTerm={setHoveredTerm}
+                            getTermDefinition={getTermDefinition}
+                            onNavigateToSimulator={onNavigateToSimulator}
+                        />
+                    </section>
 
-                {/* Module 4: Advanced Concepts */}
-                <section
-                    id="advanced"
-                    className="learn-module"
-                    ref={(el) => registerModuleRef('advanced', el)}
-                >
-                    <ModuleContent
-                        moduleId="advanced"
-                        title="Module 4: Advanced Concepts"
-                        icon="🎓"
-                        hoveredTerm={hoveredTerm}
-                        setHoveredTerm={setHoveredTerm}
-                        getTermDefinition={getTermDefinition}
-                        onNavigateToSimulator={onNavigateToSimulator}
-                    />
-                </section>
+                    {/* Module 4: Advanced Concepts */}
+                    <section
+                        id="advanced"
+                        className="scroll-mt-8"
+                        ref={(el) => registerModuleRef('advanced', el)}
+                    >
+                        <ModuleContent
+                            moduleId="advanced"
+                            title="Module 4: Advanced Concepts"
+                            icon="🎓"
+                            hoveredTerm={hoveredTerm}
+                            setHoveredTerm={setHoveredTerm}
+                            getTermDefinition={getTermDefinition}
+                            onNavigateToSimulator={onNavigateToSimulator}
+                        />
+                    </section>
 
-                {/* Formula Cheat Sheet */}
-                <section
-                    id="formulas"
-                    className="learn-module"
-                    ref={(el) => registerModuleRef('formulas', el)}
-                >
-                    <FormulaCheatSheet />
-                </section>
+                    {/* Formula Cheat Sheet */}
+                    <section
+                        id="formulas"
+                        className="scroll-mt-8"
+                        ref={(el) => registerModuleRef('formulas', el)}
+                    >
+                        <FormulaCheatSheet />
+                    </section>
+                </div>
             </main>
 
             {/* Floating Glossary Tooltip */}
             {hoveredTerm && getTermDefinition(hoveredTerm) && (
-                <div className="glossary-tooltip">
-                    <h4>{getTermDefinition(hoveredTerm)!.term}</h4>
-                    <p>{getTermDefinition(hoveredTerm)!.definition}</p>
+                <div className="fixed bottom-8 right-8 z-50 w-80 bg-[#1e1e3a] border border-accent-primary/50 text-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] p-5 animate-fade-in-up md:max-w-md backdrop-blur-md">
+                    <h4 className="text-accent-cyan font-bold text-lg mb-2 border-b border-white/10 pb-2">
+                        {getTermDefinition(hoveredTerm)!.term}
+                    </h4>
+                    <p className="text-white/80 text-sm leading-relaxed mb-3">
+                        {getTermDefinition(hoveredTerm)!.definition}
+                    </p>
                     {getTermDefinition(hoveredTerm)!.example && (
-                        <p className="tooltip-example">
+                        <p className="text-xs bg-white/5 p-2 rounded border-l-2 border-accent-secondary italic text-white/60">
                             <strong>Example:</strong> {getTermDefinition(hoveredTerm)!.example}
                         </p>
                     )}
