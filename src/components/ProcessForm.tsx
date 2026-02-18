@@ -50,12 +50,12 @@ export function ProcessForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="process-form">
-            <h3 className="form-title">Add Process</h3>
+        <form onSubmit={handleSubmit} className="glass-panel flex flex-col gap-4">
+            <h3 className="text-lg font-bold border-b border-border-main pb-2">Add Process</h3>
 
-            <div className="form-row">
-                <div className="form-group">
-                    <label htmlFor="name">Name</label>
+            <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="name" className="text-xs text-text-secondary uppercase tracking-wider">Name</label>
                     <input
                         id="name"
                         type="text"
@@ -63,12 +63,12 @@ export function ProcessForm() {
                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="P1"
                         disabled={isRunning}
-                        className="form-input"
+                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm"
                     />
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="arrivalTime">Arrival</label>
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="arrivalTime" className="text-xs text-text-secondary uppercase tracking-wider">Arrival</label>
                     <input
                         id="arrivalTime"
                         type="number"
@@ -79,12 +79,12 @@ export function ProcessForm() {
                             arrivalTime: Math.max(0, parseInt(e.target.value) || 0)
                         }))}
                         disabled={isRunning}
-                        className="form-input"
+                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm"
                     />
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="priority">Priority</label>
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="priority" className="text-xs text-text-secondary uppercase tracking-wider">Priority</label>
                     <input
                         id="priority"
                         type="number"
@@ -96,13 +96,13 @@ export function ProcessForm() {
                             priority: Math.max(0, Math.min(10, parseInt(e.target.value) || 0))
                         }))}
                         disabled={isRunning}
-                        className="form-input"
+                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm"
                     />
                 </div>
             </div>
 
-            <div className="form-group">
-                <label htmlFor="burstPattern">Burst Pattern</label>
+            <div className="flex flex-col gap-1">
+                <label htmlFor="burstPattern" className="text-xs text-text-secondary uppercase tracking-wider">Burst Pattern</label>
                 <input
                     id="burstPattern"
                     type="text"
@@ -110,14 +110,18 @@ export function ProcessForm() {
                     onChange={(e) => setFormData(prev => ({ ...prev, burstPattern: e.target.value }))}
                     placeholder="CPU(3) -> IO(2) -> CPU(5)"
                     disabled={isRunning}
-                    className="form-input burst-input"
+                    className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm font-mono"
                 />
-                <span className="form-hint">Format: CPU(n) → IO(n) → CPU(n)</span>
+                <span className="text-xs text-text-muted">Format: CPU(n) → IO(n) → CPU(n)</span>
             </div>
 
-            {error && <div className="form-error">{error}</div>}
+            {error && <div className="text-accent-error text-xs font-bold animate-pulse">{error}</div>}
 
-            <button type="submit" disabled={isRunning} className="form-submit">
+            <button
+                type="submit"
+                disabled={isRunning}
+                className="w-full py-2 bg-accent-primary text-white rounded-md font-bold hover:bg-accent-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-accent-primary/20"
+            >
                 + Add Process
             </button>
         </form>

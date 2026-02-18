@@ -135,7 +135,7 @@ export type CoreCount = 1 | 2 | 4;
 // ============================================================
 
 // Simulation mode (Normal, Predict & Verify, or Quiz)
-export type InteractionMode = 'NORMAL' | 'PREDICT_VERIFY' | 'QUIZ';
+export type InteractionMode = 'NORMAL' | 'PREDICT_VERIFY';
 
 // Individual process prediction
 export interface Prediction {
@@ -174,44 +174,6 @@ export interface PredictionResults {
     accuracy: number;  // 0-100%
 }
 
-// Quiz question types
-export type QuizQuestionType = 'PREEMPTION' | 'NEXT_PROCESS' | 'QUEUE_ORDER';
-
-// Quiz question structure
-export interface QuizQuestion {
-    id: string;
-    type: QuizQuestionType;
-    question: string;
-    options: string[];
-    correctAnswer: string;
-    explanation: string;
-    timestamp: number;
-    context: {
-        currentProcess?: string;
-        arrivingProcess?: string;
-        algorithm: Algorithm;
-    };
-}
-
-// Quiz answer history entry
-export interface QuizAnswerEntry {
-    question: QuizQuestion;
-    userAnswer: string;
-    correct: boolean;
-    timeTaken: number;  // ms
-}
-
-// Quiz state for Quiz mode
-export interface QuizState {
-    active: boolean;                     // Is a question currently showing?
-    currentQuestion: QuizQuestion | null;
-    questionsAnswered: number;
-    correctAnswers: number;
-    totalPoints: number;
-    history: QuizAnswerEntry[];
-    showFinalResults: boolean;
-}
-
 // Main Scheduler State
 export interface SchedulerState {
     // Configuration
@@ -244,7 +206,6 @@ export interface SchedulerState {
     // Test/Prediction Mode
     interactionMode: InteractionMode;
     predictionState: PredictionState;
-    quizState: QuizState;
 }
 
 // Actions for reducer
@@ -270,11 +231,7 @@ export type SchedulerAction =
     | { type: 'SET_AWT_PREDICTION'; payload: number | null }
     | { type: 'SUBMIT_PREDICTIONS' }
     | { type: 'INIT_PREDICTIONS' }
-    | { type: 'SHOW_PREDICTION_RESULTS' }
-    | { type: 'TRIGGER_QUIZ'; payload: QuizQuestion }
-    | { type: 'ANSWER_QUIZ'; payload: { answer: string; timeTaken: number } }
-    | { type: 'DISMISS_QUIZ' }
-    | { type: 'SHOW_QUIZ_RESULTS' };
+    | { type: 'SHOW_PREDICTION_RESULTS' };
 
 // Process input form data
 export interface ProcessFormData {

@@ -7,9 +7,9 @@ export { ProcessQueue } from './ProcessQueue';
 export { ProcessTable } from './ProcessTable';
 export { PredictionTable } from './PredictionTable';
 export { Scorecard } from './Scorecard';
-export { QuizPopup } from './QuizPopup';
 export { LearnPage } from './LearnPage';
 export { ModuleContent } from './ModuleContent';
 export { FormulaCheatSheet } from './FormulaCheatSheet';
 export { LandingPage } from './LandingPage';
+export { SimulatorPage } from './SimulatorPage';
 

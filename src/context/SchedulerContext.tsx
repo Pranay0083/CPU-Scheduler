@@ -13,8 +13,6 @@ import type {
     MLFQQueue,
     InteractionMode,
     PredictionState,
-    QuizState,
-    QuizQuestion,
 } from '../types';
 import { PROCESS_COLORS } from '../types';
 import { getNextProcess, assignProcessToCore, applyPriorityAging } from '../engine/algorithms';
@@ -64,16 +62,6 @@ const initialPredictionState: PredictionState = {
     showResults: false,
 };
 
-const initialQuizState: QuizState = {
-    active: false,
-    currentQuestion: null,
-    questionsAnswered: 0,
-    correctAnswers: 0,
-    totalPoints: 0,
-    history: [],
-    showFinalResults: false,
-};
-
 const initialState: SchedulerState = {
     algorithm: 'FCFS',
     coreCount: 1,
@@ -93,7 +81,6 @@ const initialState: SchedulerState = {
     // Test/Prediction Mode
     interactionMode: 'NORMAL',
     predictionState: initialPredictionState,
-    quizState: initialQuizState,
 };
 
 // ============================================================
@@ -688,7 +675,6 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                 clockHistory: [],
                 simulationState: 'STOPPED',
                 predictionState: initialPredictionState,
-                quizState: initialQuizState,
             };
 
         // ============================================================
@@ -699,7 +685,6 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                 ...state,
                 interactionMode: action.payload,
                 predictionState: initialPredictionState,
-                quizState: initialQuizState,
             };
 
         case 'INIT_PREDICTIONS':
@@ -758,64 +743,6 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                 },
             };
 
-        case 'TRIGGER_QUIZ':
-            return {
-                ...state,
-                simulationState: 'PAUSED',
-                quizState: {
-                    ...state.quizState,
-                    active: true,
-                    currentQuestion: action.payload,
-                },
-            };
-
-        case 'ANSWER_QUIZ': {
-            const currentQuestion = state.quizState.currentQuestion;
-            if (!currentQuestion) return state;
-
-            const isCorrect = action.payload.answer === currentQuestion.correctAnswer;
-            const points = isCorrect ? 10 : 0;
-
-            return {
-                ...state,
-                quizState: {
-                    ...state.quizState,
-                    questionsAnswered: state.quizState.questionsAnswered + 1,
-                    correctAnswers: state.quizState.correctAnswers + (isCorrect ? 1 : 0),
-                    totalPoints: state.quizState.totalPoints + points,
-                    history: [
-                        ...state.quizState.history,
-                        {
-                            question: currentQuestion,
-                            userAnswer: action.payload.answer,
-                            correct: isCorrect,
-                            timeTaken: action.payload.timeTaken,
-                        },
-                    ],
-                },
-            };
-        }
-
-        case 'DISMISS_QUIZ':
-            return {
-                ...state,
-                simulationState: 'RUNNING',
-                quizState: {
-                    ...state.quizState,
-                    active: false,
-                    currentQuestion: null,
-                },
-            };
-
-        case 'SHOW_QUIZ_RESULTS':
-            return {
-                ...state,
-                quizState: {
-                    ...state.quizState,
-                    showFinalResults: true,
-                },
-            };
-
         default:
             return state;
     }
@@ -847,10 +774,6 @@ interface SchedulerContextType {
     setAWTPrediction: (awt: number | null) => void;
     submitPredictions: () => void;
     showPredictionResults: () => void;
-    triggerQuiz: (question: QuizQuestion) => void;
-    answerQuiz: (answer: string, timeTaken: number) => void;
-    dismissQuiz: () => void;
-    showQuizResults: () => void;
 }
 
 const SchedulerContext = createContext<SchedulerContextType | null>(null);
@@ -957,22 +880,6 @@ export function SchedulerProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SHOW_PREDICTION_RESULTS' });
     }, []);
 
-    const triggerQuiz = useCallback((question: QuizQuestion) => {
-        dispatch({ type: 'TRIGGER_QUIZ', payload: question });
-    }, []);
-
-    const answerQuiz = useCallback((answer: string, timeTaken: number) => {
-        dispatch({ type: 'ANSWER_QUIZ', payload: { answer, timeTaken } });
-    }, []);
-
-    const dismissQuiz = useCallback(() => {
-        dispatch({ type: 'DISMISS_QUIZ' });
-    }, []);
-
-    const showQuizResults = useCallback(() => {
-        dispatch({ type: 'SHOW_QUIZ_RESULTS' });
-    }, []);
-
     const value = {
         state,
         dispatch,
@@ -996,10 +903,6 @@ export function SchedulerProvider({ children }: { children: React.ReactNode }) {
         setAWTPrediction,
         submitPredictions,
         showPredictionResults,
-        triggerQuiz,
-        answerQuiz,
-        dismissQuiz,
-        showQuizResults,
     };
 
     return (
