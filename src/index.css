@@ -42,8 +42,8 @@
 
 /* Base Styles */
 body {
-  @apply bg-bg-primary text-text-primary min-h-screen text-[14px];
-  font-family: var(--font-sans);
+  @apply bg-bg-primary text-accent-primary min-h-screen text-[14px];
+  font-family: var(--font-mono); /* Terminal full monospace */
   /* Dot grid pattern background simulating logic analyzer */
   background-color: var(--color-bg-primary);
   background-image: radial-gradient(var(--color-border-main) 1px, transparent 1px);
@@ -52,15 +52,15 @@ body {
 
 /* Common Utility Classes for Brutalist/Industrial */
 @utility glass-panel {
-  @apply bg-bg-glass backdrop-blur-md border border-border-main rounded p-4;
+  @apply bg-bg-primary border border-border-main rounded p-4 shadow-[0_0_15px_rgba(0,255,65,0.05)];
 }
 
 @utility glass-header {
-  @apply bg-bg-glass backdrop-blur-md border-b border-border-main px-8 sticky top-0 z-50 flex items-center h-[80px];
+  @apply bg-bg-primary border-b border-border-main px-8 sticky top-0 z-50 flex items-center h-[80px];
 }
 
 @utility glass-footer {
-  @apply bg-bg-glass backdrop-blur-md border-t border-border-main flex items-center justify-center text-text-muted text-xs h-[40px];
+  @apply bg-bg-primary border-t border-border-main flex items-center justify-center text-accent-primary text-xs h-[40px] tracking-widest uppercase;
 }
 
 /* Scrollbar Utility for Terminal look */

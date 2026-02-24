@@ -1,11 +1,8 @@
 import { useScheduler } from '../context/SchedulerContext';
 import { parseBurstPattern } from '../types';
-import type { Algorithm, CoreCount, SimulationSpeed, InteractionMode } from '../types';
+import type { Algorithm, CoreCount, SimulationSpeed } from '../types';
 
-const INTERACTION_MODES: { value: InteractionMode; label: string; icon: string }[] = [
-    { value: 'NORMAL', label: 'Normal', icon: '▶️' },
-    { value: 'PREDICT_VERIFY', label: 'Predict & Verify', icon: '📝' },
-];
+
 
 const ALGORITHMS: { value: Algorithm; label: string }[] = [
     { value: 'FCFS', label: 'First Come First Serve' },
@@ -20,35 +17,92 @@ const ALGORITHMS: { value: Algorithm; label: string }[] = [
 const PRESETS = [
     {
         name: 'Basic FCFS',
+        algorithm: 'FCFS',
+        coreCount: 1,
+        timeQuantum: undefined,
         processes: [
-            { name: 'P1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(5)' },
-            { name: 'P2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(3)' },
-            { name: 'P3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(5)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(3)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(4)' },
         ],
     },
     {
-        name: 'Preemption Demo',
+        name: 'Multi-Core FCFS',
+        algorithm: 'FCFS',
+        coreCount: 2,
+        timeQuantum: undefined,
         processes: [
-            { name: 'P1', arrivalTime: 0, priority: 3, burstPattern: 'CPU(8)' },
-            { name: 'P2', arrivalTime: 2, priority: 1, burstPattern: 'CPU(4)' },
-            { name: 'P3', arrivalTime: 4, priority: 2, burstPattern: 'CPU(2)' },
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(6)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(5)' },
         ],
     },
     {
-        name: 'I/O Bound',
+        name: 'Multi-Core SJF',
+        algorithm: 'SJF',
+        coreCount: 2,
+        timeQuantum: undefined,
         processes: [
-            { name: 'P1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(3) -> IO(2) -> CPU(2)' },
-            { name: 'P2', arrivalTime: 1, priority: 2, burstPattern: 'CPU(2) -> IO(3) -> CPU(3)' },
-            { name: 'P3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(7)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(2)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(4)' },
         ],
     },
     {
-        name: 'Multi-Core Load',
+        name: 'Multi-Core SRTF',
+        algorithm: 'SRTF',
+        coreCount: 2,
+        timeQuantum: undefined,
         processes: [
-            { name: 'P1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(6)' },
-            { name: 'P2', arrivalTime: 0, priority: 2, burstPattern: 'CPU(4)' },
-            { name: 'P3', arrivalTime: 0, priority: 1, burstPattern: 'CPU(5)' },
-            { name: 'P4', arrivalTime: 0, priority: 3, burstPattern: 'CPU(3)' },
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(8)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(2)' },
+            { name: '4', arrivalTime: 3, priority: 1, burstPattern: 'CPU(1)' },
+        ],
+    },
+    {
+        name: 'Multi-Core Round Robin',
+        algorithm: 'ROUND_ROBIN',
+        timeQuantum: 2,
+        coreCount: 2,
+        processes: [
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(5)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(3)' },
+        ],
+    },
+    {
+        name: 'Multi-Core Priority (Non-Preempt)',
+        algorithm: 'PRIORITY_NON_PREEMPTIVE',
+        coreCount: 2,
+        timeQuantum: undefined,
+        processes: [
+            { name: '1', arrivalTime: 0, priority: 3, burstPattern: 'CPU(5)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 2, burstPattern: 'CPU(6)' },
+        ],
+    },
+    {
+        name: 'Multi-Core Priority (Preemptive)',
+        algorithm: 'PRIORITY_PREEMPTIVE',
+        coreCount: 2,
+        timeQuantum: undefined,
+        processes: [
+            { name: '1', arrivalTime: 0, priority: 3, burstPattern: 'CPU(5)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 2, burstPattern: 'CPU(6)' },
+            { name: '4', arrivalTime: 3, priority: 1, burstPattern: 'CPU(2)' },
+        ],
+    },
+    {
+        name: 'Multi-Core MLFQ',
+        algorithm: 'MLFQ',
+        timeQuantum: 2,
+        coreCount: 2,
+        processes: [
+            { name: '1', arrivalTime: 0, priority: 1, burstPattern: 'CPU(8)' },
+            { name: '2', arrivalTime: 1, priority: 1, burstPattern: 'CPU(4)' },
+            { name: '3', arrivalTime: 2, priority: 1, burstPattern: 'CPU(2)' },
         ],
     },
 ];
@@ -75,6 +129,9 @@ export function ControlPanel() {
 
     const loadPreset = (preset: typeof PRESETS[0]) => {
         clearProcesses();
+        if (preset.algorithm) setAlgorithm(preset.algorithm as Algorithm);
+        if (preset.coreCount) setCoreCount(preset.coreCount as CoreCount);
+        if (preset.timeQuantum) setTimeQuantum(preset.timeQuantum);
         preset.processes.forEach(p => {
             const bursts = parseBurstPattern(p.burstPattern);
             addProcess({
@@ -91,20 +148,19 @@ export function ControlPanel() {
         <div className="glass-panel flex flex-col gap-4 text-sm">
             {/* Simulation Mode Selector */}
             <div className="flex flex-col gap-2 border-b border-border-main pb-4">
-                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Mode</h3>
-                <div className="grid grid-cols-2 gap-2">
-                    {INTERACTION_MODES.map(mode => (
+                <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Mode</h3>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-xs ${state.interactionMode === 'NORMAL' ? 'text-accent-primary font-bold' : 'text-text-muted'}`}>Normal</span>
                         <button
-                            key={mode.value}
-                            onClick={() => setInteractionMode(mode.value)}
+                            onClick={() => setInteractionMode(state.interactionMode === 'NORMAL' ? 'PREDICT_VERIFY' : 'NORMAL')}
                             disabled={isRunning}
-                            className={`p-2 rounded-lg transition-all flex flex-col items-center gap-1 border ${state.interactionMode === mode.value ? 'bg-accent-primary/20 border-accent-primary/50 text-accent-primary' : 'bg-white/5 border-transparent hover:bg-white/10'}`}
-                            title={mode.label}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${state.interactionMode === 'PREDICT_VERIFY' ? 'bg-accent-purple' : 'bg-bg-tertiary border border-border-main'}`}
                         >
-                            <span className="text-xl">{mode.icon}</span>
-                            <span className="text-xs font-medium">{mode.label}</span>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${state.interactionMode === 'PREDICT_VERIFY' ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
-                    ))}
+                        <span className={`text-xs ${state.interactionMode === 'PREDICT_VERIFY' ? 'text-accent-purple font-bold' : 'text-text-muted'}`}>Predict & Verify</span>
+                    </div>
                 </div>
             </div>
 
@@ -232,11 +288,11 @@ export function ControlPanel() {
                     ↺ Reset
                 </button>
             </div>
-
+            {/* 
             <div className="mt-4 flex flex-col items-center justify-center p-4 bg-bg-secondary/50 rounded-lg border border-border-main">
                 <span className="text-xs text-text-secondary uppercase tracking-widest mb-1">Clock</span>
                 <span className="text-4xl font-mono font-bold text-accent-info">{state.clock}</span>
-            </div>
+            </div> */}
         </div>
     );
 }

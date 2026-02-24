@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useScheduler } from '../context/SchedulerContext';
-import { parseBurstPattern } from '../types';
 
 export function ProcessForm() {
     const { addProcess, state } = useScheduler();
     const [formData, setFormData] = useState({
-        name: '',
+        id: 1,
         arrivalTime: 0,
         priority: 1,
-        burstPattern: 'CPU(5)',
+        burstTime: 5,
     });
     const [error, setError] = useState('');
 
@@ -18,33 +17,23 @@ export function ProcessForm() {
         e.preventDefault();
         setError('');
 
-        const bursts = parseBurstPattern(formData.burstPattern);
-
-        if (bursts.length === 0) {
-            setError('Invalid burst pattern. Use format: CPU(3) -> IO(2) -> CPU(5)');
-            return;
-        }
-
-        if (!formData.name.trim()) {
-            setError('Process name is required');
+        if (formData.burstTime <= 0) {
+            setError('Burst time must be greater than 0');
             return;
         }
 
         addProcess({
-            name: formData.name.trim(),
+            name: formData.id.toString(),
             arrivalTime: formData.arrivalTime,
             priority: formData.priority,
-            bursts,
+            bursts: [{ type: 'CPU', duration: formData.burstTime, remaining: formData.burstTime }],
             color: '',
         });
 
-        // Reset form with incremented name
-        const match = formData.name.match(/^P(\d+)$/);
-        const nextName = match ? `P${parseInt(match[1]) + 1}` : 'P1';
-
+        // Reset form with incremented ID
         setFormData(prev => ({
             ...prev,
-            name: nextName,
+            id: prev.id + 1,
             arrivalTime: prev.arrivalTime + 1,
         }));
     };
@@ -55,15 +44,16 @@ export function ProcessForm() {
 
             <div className="grid grid-cols-3 gap-2">
                 <div className="flex flex-col gap-1">
-                    <label htmlFor="name" className="text-xs text-text-secondary uppercase tracking-wider">Name</label>
+                    <label htmlFor="id" className="text-xs text-text-secondary uppercase tracking-wider">ID</label>
                     <input
-                        id="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="P1"
+                        id="id"
+                        type="number"
+                        min="1"
+                        value={formData.id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, id: Math.max(1, parseInt(e.target.value) || 1) }))}
+                        placeholder="1"
                         disabled={isRunning}
-                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm"
+                        className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm font-mono"
                     />
                 </div>
 
@@ -102,17 +92,17 @@ export function ProcessForm() {
             </div>
 
             <div className="flex flex-col gap-1">
-                <label htmlFor="burstPattern" className="text-xs text-text-secondary uppercase tracking-wider">Burst Pattern</label>
+                <label htmlFor="burstTime" className="text-xs text-text-secondary uppercase tracking-wider">Burst Time</label>
                 <input
-                    id="burstPattern"
-                    type="text"
-                    value={formData.burstPattern}
-                    onChange={(e) => setFormData(prev => ({ ...prev, burstPattern: e.target.value }))}
-                    placeholder="CPU(3) -> IO(2) -> CPU(5)"
+                    id="burstTime"
+                    type="number"
+                    min="1"
+                    value={formData.burstTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, burstTime: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    placeholder="5"
                     disabled={isRunning}
                     className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none text-sm font-mono"
                 />
-                <span className="text-xs text-text-muted">Format: CPU(n) → IO(n) → CPU(n)</span>
             </div>
 
             {error && <div className="text-accent-error text-xs font-bold animate-pulse">{error}</div>}
