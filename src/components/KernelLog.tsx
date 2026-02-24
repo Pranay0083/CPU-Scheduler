@@ -76,7 +76,10 @@ export function KernelLog() {
                         <button
                             key={f}
                             onClick={() => setFilter(f as any)}
-                            className={`px-2 py-1 text-[10px] uppercase font-bold rounded transition-colors ${filter === f ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/50' : 'bg-white/5 text-text-muted hover:bg-white/10 border border-transparent'}`}
+                            className={`px-2 py-1 text-[10px] uppercase font-bold rounded transition-all ${filter === f
+                                    ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/50 shadow-[0_0_15px_rgba(0,255,136,0.2)]'
+                                    : 'bg-white/5 text-text-muted hover:bg-white/10 hover:shadow-[0_0_10px_rgba(255,255,255,0.05)] border border-transparent'
+                                }`}
                         >
                             {f}
                         </button>

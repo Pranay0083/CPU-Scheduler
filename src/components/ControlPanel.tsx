@@ -255,7 +255,7 @@ export function ControlPanel() {
                                 key={preset.name}
                                 onClick={() => loadPreset(preset)}
                                 disabled={isRunning}
-                                className="px-2 py-1 text-[10px] uppercase font-bold text-text-muted bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="glass-button px-2 py-1 text-[10px] uppercase font-bold text-text-muted rounded disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={`Load ${preset.name}`}
                             >
                                 {preset.name}

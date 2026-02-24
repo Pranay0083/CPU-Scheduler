@@ -341,7 +341,13 @@ export type LearningModuleId =
     | 'scheduling-criteria'
     | 'preemption'
     | 'advanced'
-    | 'formulas';
+    | 'formulas'
+    | 'fcfs'
+    | 'sjf'
+    | 'srtf'
+    | 'rr'
+    | 'priority'
+    | 'mlfq';
 
 // Glossary term definition
 export interface GlossaryTerm {

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { LearningModuleId, GlossaryTerm } from '../types';
 import { FormulaCheatSheet } from './FormulaCheatSheet';
 import { ModuleContent } from './ModuleContent';
+import { AlgorithmContent } from './AlgorithmContent';
 
 // Glossary terms data
 const GLOSSARY_TERMS: GlossaryTerm[] = [
@@ -53,14 +55,42 @@ const GLOSSARY_TERMS: GlossaryTerm[] = [
     },
 ];
 
-// Module navigation items
-const MODULES: { id: LearningModuleId; title: string; icon: string }[] = [
-    { id: 'basics', title: 'The Basics', icon: '📚' },
-    { id: 'scheduling-criteria', title: 'Scheduling Criteria', icon: '📊' },
-    { id: 'preemption', title: 'Preemption', icon: '🔄' },
-    { id: 'advanced', title: 'Advanced Concepts', icon: '🎓' },
-    { id: 'formulas', title: 'Formula Cheat Sheet', icon: '📐' },
+// Module navigation groups
+interface ModuleGroup {
+    category: string;
+    items: { id: LearningModuleId; title: string; icon: string }[];
+}
+
+const MODULE_GROUPS: ModuleGroup[] = [
+    {
+        category: 'Getting Started',
+        items: [
+            { id: 'basics', title: 'The Basics', icon: '📚' },
+            { id: 'scheduling-criteria', title: 'Scheduling Criteria', icon: '📊' },
+            { id: 'preemption', title: 'Preemption', icon: '🔄' },
+        ],
+    },
+    {
+        category: 'Algorithms',
+        items: [
+            { id: 'fcfs', title: 'First Come First Serve', icon: '🏃' },
+            { id: 'sjf', title: 'Shortest Job First', icon: '⚡' },
+            { id: 'srtf', title: 'Shortest Remaining Time', icon: '⏱️' },
+            { id: 'rr', title: 'Round Robin', icon: '🎡' },
+            { id: 'priority', title: 'Priority Scheduling', icon: '⭐' },
+            { id: 'mlfq', title: 'Multi-Level Feedback', icon: '🏢' },
+        ],
+    },
+    {
+        category: 'Advanced & Resources',
+        items: [
+            { id: 'advanced', title: 'Advanced Concepts', icon: '🎓' },
+            { id: 'formulas', title: 'Formula Cheat Sheet', icon: '📐' },
+        ],
+    },
 ];
+
+const MODULES = MODULE_GROUPS.flatMap(g => g.items);
 
 interface LearnPageProps {
     onNavigateToSimulator: (algorithm?: string, preset?: string) => void;
@@ -78,6 +108,18 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
         'preemption': null,
         'advanced': null,
         'formulas': null,
+        'fcfs': null,
+        'sjf': null,
+        'srtf': null,
+        'rr': null,
+        'priority': null,
+        'mlfq': null,
+    });
+
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+        'Getting Started': true,
+        'Algorithms': true,
+        'Advanced & Resources': true
     });
 
     // Handle scroll to update active module
@@ -143,19 +185,42 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
                     </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 custom-scrollbar">
-                    {MODULES.map((module) => (
-                        <button
-                            key={module.id}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all w-full text-left
-                                ${activeModule === module.id
-                                    ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20'
-                                    : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}
-                            onClick={() => scrollToModule(module.id)}
-                        >
-                            <span className="text-lg">{module.icon}</span>
-                            <span>{module.title}</span>
-                        </button>
+                <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-6 custom-scrollbar">
+                    {MODULE_GROUPS.map((group) => (
+                        <div key={group.category} className="flex flex-col gap-1">
+                            <button
+                                className="flex items-center justify-between px-4 mb-2 text-white/40 hover:text-white/70 transition-colors group"
+                                onClick={() => setExpandedGroups(prev => ({ ...prev, [group.category]: !prev[group.category] }))}
+                            >
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest">
+                                    {group.category}
+                                </h4>
+                                {expandedGroups[group.category] ? (
+                                    <ChevronDown className="w-4 h-4" />
+                                ) : (
+                                    <ChevronRight className="w-4 h-4" />
+                                )}
+                            </button>
+
+                            {/* Render items if expanded */}
+                            {expandedGroups[group.category] && (
+                                <div className="flex flex-col gap-1 animate-fade-in">
+                                    {group.items.map((module) => (
+                                        <button
+                                            key={module.id}
+                                            className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all w-full text-left
+                                                ${activeModule === module.id
+                                                    ? 'bg-accent-primary/20 text-accent-primary shadow-[0_0_15px_rgba(0,255,136,0.15)] border border-accent-primary/30'
+                                                    : 'text-white/60 hover:bg-white/5 hover:text-white/90 border border-transparent'}`}
+                                            onClick={() => scrollToModule(module.id)}
+                                        >
+                                            <span className="text-base opacity-80">{module.icon}</span>
+                                            <span>{module.title}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </nav>
 
@@ -172,82 +237,35 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto scroll-smooth relative p-8 md:p-12 custom-scrollbar bg-[#0f0f1d]" ref={contentRef}>
                 <div className="max-w-4xl mx-auto space-y-24 pb-24">
-                    {/* Module 1: The Basics */}
-                    <section
-                        id="basics"
-                        className="scroll-mt-8"
-                        ref={(el) => registerModuleRef('basics', el)}
-                    >
-                        <ModuleContent
-                            moduleId="basics"
-                            title="Module 1: The Basics"
-                            icon="📚"
-                            hoveredTerm={hoveredTerm}
-                            setHoveredTerm={setHoveredTerm}
-                            getTermDefinition={getTermDefinition}
-                            onNavigateToSimulator={onNavigateToSimulator}
-                        />
-                    </section>
-
-                    {/* Module 2: Scheduling Criteria */}
-                    <section
-                        id="scheduling-criteria"
-                        className="scroll-mt-8"
-                        ref={(el) => registerModuleRef('scheduling-criteria', el)}
-                    >
-                        <ModuleContent
-                            moduleId="scheduling-criteria"
-                            title="Module 2: Scheduling Criteria"
-                            icon="📊"
-                            hoveredTerm={hoveredTerm}
-                            setHoveredTerm={setHoveredTerm}
-                            getTermDefinition={getTermDefinition}
-                            onNavigateToSimulator={onNavigateToSimulator}
-                        />
-                    </section>
-
-                    {/* Module 3: Preemption */}
-                    <section
-                        id="preemption"
-                        className="scroll-mt-8"
-                        ref={(el) => registerModuleRef('preemption', el)}
-                    >
-                        <ModuleContent
-                            moduleId="preemption"
-                            title="Module 3: Non-Preemptive vs Preemptive"
-                            icon="🔄"
-                            hoveredTerm={hoveredTerm}
-                            setHoveredTerm={setHoveredTerm}
-                            getTermDefinition={getTermDefinition}
-                            onNavigateToSimulator={onNavigateToSimulator}
-                        />
-                    </section>
-
-                    {/* Module 4: Advanced Concepts */}
-                    <section
-                        id="advanced"
-                        className="scroll-mt-8"
-                        ref={(el) => registerModuleRef('advanced', el)}
-                    >
-                        <ModuleContent
-                            moduleId="advanced"
-                            title="Module 4: Advanced Concepts"
-                            icon="🎓"
-                            hoveredTerm={hoveredTerm}
-                            setHoveredTerm={setHoveredTerm}
-                            getTermDefinition={getTermDefinition}
-                            onNavigateToSimulator={onNavigateToSimulator}
-                        />
-                    </section>
-
-                    {/* Formula Cheat Sheet */}
-                    <section
-                        id="formulas"
-                        className="scroll-mt-8"
-                        ref={(el) => registerModuleRef('formulas', el)}
-                    >
-                        <FormulaCheatSheet />
-                    </section>
+                    {MODULES.map((module) => (
+                        <section
+                            key={module.id}
+                            id={module.id}
+                            className="scroll-mt-8"
+                            ref={(el) => registerModuleRef(module.id, el)}
+                        >
+                            {['fcfs', 'sjf', 'srtf', 'rr', 'priority', 'mlfq'].includes(module.id) ? (
+                                <AlgorithmContent
+                                    moduleId={module.id}
+                                    title={module.title}
+                                    icon={module.icon}
+                                    onNavigateToSimulator={onNavigateToSimulator}
+                                />
+                            ) : module.id === 'formulas' ? (
+                                <FormulaCheatSheet />
+                            ) : (
+                                <ModuleContent
+                                    moduleId={module.id}
+                                    title={module.title}
+                                    icon={module.icon}
+                                    hoveredTerm={hoveredTerm}
+                                    setHoveredTerm={setHoveredTerm}
+                                    getTermDefinition={getTermDefinition}
+                                    onNavigateToSimulator={onNavigateToSimulator}
+                                />
+                            )}
+                        </section>
+                    ))}
                 </div>
             </main>
 

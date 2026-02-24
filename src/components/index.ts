@@ -10,4 +10,4 @@ export { ModuleContent } from './ModuleContent';
 export { FormulaCheatSheet } from './FormulaCheatSheet';
 export { LandingPage } from './LandingPage';
 export { SimulatorPage } from './SimulatorPage';
-
+export { AlgorithmContent } from './AlgorithmContent';
