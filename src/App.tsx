@@ -80,7 +80,7 @@ function AppLayout() {
     }
   };
 
-  const handleNavigateToSimulator = (algorithm?: string, _preset?: string) => {
+  const handleNavigateToSimulator = (algorithm?: string) => {
     if (algorithm) {
       dispatch({ type: 'SET_ALGORITHM', payload: algorithm as Algorithm });
     }
@@ -97,8 +97,8 @@ function AppLayout() {
       {!isHome && (
         <header className="glass-header justify-between">
           <div className="flex flex-col gap-1">
-            <h1 
-              className="text-2xl font-bold bg-gradient-to-br from-accent-primary to-accent-secondary bg-clip-text text-transparent flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity" 
+            <h1
+              className="text-2xl font-bold bg-gradient-to-br from-accent-primary to-accent-secondary bg-clip-text text-transparent flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
               onClick={() => navigate('/')}
             >
               <span className="text-2xl">⚡</span>
@@ -130,8 +130,8 @@ function AppLayout() {
 
       {/* Page Routing */}
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <LandingPage
               onNavigate={handleNavigate}
@@ -139,21 +139,21 @@ function AppLayout() {
               darkMode={darkMode}
               onToggleDarkMode={toggleDarkMode}
             />
-          } 
+          }
         />
-        <Route 
-          path="/simulator" 
-          element={<SimulatorPage />} 
+        <Route
+          path="/simulator"
+          element={<SimulatorPage />}
         />
-        <Route 
-          path="/learn" 
+        <Route
+          path="/learn"
           element={
             <LearnPage
               onNavigateToSimulator={handleNavigateToSimulator}
               darkMode={darkMode}
               onToggleDarkMode={toggleDarkMode}
             />
-          } 
+          }
         />
       </Routes>
     </div>

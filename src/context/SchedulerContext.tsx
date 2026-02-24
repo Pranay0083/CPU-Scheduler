@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useReducer, useCallback, useRef, useEffect } from 'react';
 import type {
     SchedulerState,
@@ -162,7 +163,7 @@ function performTick(state: SchedulerState): SchedulerState {
     const events: SchedulerEvent[] = [];
     let updatedProcesses = [...state.processes];
     let updatedCores = state.cores.map(c => ({ ...c }));
-    let updatedIODevice = { ...state.ioDevice, waitQueue: [...state.ioDevice.waitQueue] };
+    const updatedIODevice = { ...state.ioDevice, waitQueue: [...state.ioDevice.waitQueue] };
 
     // 1. Check for newly arrived processes
     const newlyArrived = updatedProcesses.filter(
@@ -293,7 +294,7 @@ function performTick(state: SchedulerState): SchedulerState {
             state.timeQuantum
         );
 
-        let ganttHistory = [...core.ganttHistory];
+        const ganttHistory = [...core.ganttHistory];
 
         // Handle preemption
         if (decision.shouldPreempt && currentProcess) {
@@ -657,7 +658,7 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                 mlfqQueues: createMLFQQueues(3, state.timeQuantum),
             };
 
-        case 'LOAD_PRESET':
+        case 'LOAD_PRESET': {
             processCounter = 0;
             const presetProcesses = action.payload.map(p => ({
                 ...p,
@@ -676,6 +677,7 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                 simulationState: 'STOPPED',
                 predictionState: initialPredictionState,
             };
+        }
 
         // ============================================================
         // Test/Prediction Mode Actions

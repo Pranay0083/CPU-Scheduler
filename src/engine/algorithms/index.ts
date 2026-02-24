@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type {
     Process,
     Algorithm,
@@ -159,7 +160,7 @@ export function priorityPreemptiveSchedule(
             if (
                 p.priority < best.priority || // Higher priority
                 (p.priority === best.priority &&
-                 p.arrivalTime < best.arrivalTime)
+                    p.arrivalTime < best.arrivalTime)
             ) {
                 best = p;
             }
@@ -181,7 +182,7 @@ export function priorityPreemptiveSchedule(
             if (
                 p.priority < best.priority ||
                 (p.priority === best.priority &&
-                 p.arrivalTime < best.arrivalTime)
+                    p.arrivalTime < best.arrivalTime)
             ) {
                 best = p;
             }
@@ -232,7 +233,7 @@ export function priorityNonPreemptiveSchedule(
         if (
             p.priority < best.priority ||
             (p.priority === best.priority &&
-             p.arrivalTime < best.arrivalTime)
+                p.arrivalTime < best.arrivalTime)
         ) {
             best = p;
         }
@@ -446,16 +447,18 @@ export function getNextProcess(
                 resetQuantum: !currentProcess,
             };
 
-        case 'SRTF':
+        case 'SRTF': {
             const srtfResult = srtfSchedule(readyQueue, currentProcess, currentTime);
             return { ...srtfResult, resetQuantum: srtfResult.shouldPreempt };
+        }
 
         case 'ROUND_ROBIN':
             return roundRobinSchedule(readyQueue, currentProcess, timeQuantumRemaining, currentTime);
 
-        case 'PRIORITY_PREEMPTIVE':
+        case 'PRIORITY_PREEMPTIVE': {
             const preemptiveResult = priorityPreemptiveSchedule(readyQueue, currentProcess, currentTime);
             return { ...preemptiveResult, resetQuantum: preemptiveResult.shouldPreempt };
+        }
 
         case 'PRIORITY_NON_PREEMPTIVE':
             return {

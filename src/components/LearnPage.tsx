@@ -4,7 +4,7 @@ import { FormulaCheatSheet } from './FormulaCheatSheet';
 import { ModuleContent } from './ModuleContent';
 
 // Glossary terms data
-export const GLOSSARY_TERMS: GlossaryTerm[] = [
+const GLOSSARY_TERMS: GlossaryTerm[] = [
     {
         term: 'Preemption',
         definition: 'The act of temporarily interrupting a running process to allow another process to execute, typically done by the scheduler based on priority or time quantum.',
@@ -148,8 +148,8 @@ export function LearnPage({ onNavigateToSimulator, darkMode, onToggleDarkMode }:
                         <button
                             key={module.id}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all w-full text-left
-                                ${activeModule === module.id 
-                                    ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20' 
+                                ${activeModule === module.id
+                                    ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20'
                                     : 'text-white/60 hover:bg-white/5 hover:text-white/90'}`}
                             onClick={() => scrollToModule(module.id)}
                         >

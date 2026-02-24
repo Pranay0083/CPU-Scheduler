@@ -251,20 +251,18 @@ export interface PresetScenario {
     coreCount?: CoreCount;
 }
 
-// Color palette for processes
+// Color palette for processes (Terminal Midnight Theme)
 export const PROCESS_COLORS = [
-    '#FF6B6B', // Red
-    '#4ECDC4', // Teal
-    '#45B7D1', // Blue
-    '#96CEB4', // Green
-    '#FFEAA7', // Yellow
-    '#DDA0DD', // Plum
-    '#98D8C8', // Mint
-    '#F7DC6F', // Gold
-    '#BB8FCE', // Purple
-    '#85C1E9', // Light Blue
-    '#F8B500', // Orange
-    '#00CED1', // Dark Cyan
+    '#FF5F5F', // Soft Red (P1)
+    '#50FA7B', // Bright Green (P2)
+    '#8BE9FD', // Cyan (P3)
+    '#BD93F9', // Purple (P4)
+    '#F1FA8C', // Yellow
+    '#FF79C6', // Pink
+    '#FFB86C', // Orange
+    '#6272A4', // Darker Blue
+    '#3FB1FE', // System Blue
+    '#00FF41', // Matrix Green
 ];
 
 // Starvation heat map colors (cool to hot)

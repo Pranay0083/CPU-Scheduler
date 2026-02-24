@@ -1,32 +1,38 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
-  --color-bg-primary: #0f0f1a;
-  --color-bg-secondary: #1a1a2e;
-  --color-bg-tertiary: #16213e;
-  --color-bg-card: rgba(26, 26, 46, 0.8);
-  --color-bg-glass: rgba(255, 255, 255, 0.05);
+  /* Colors - Terminal Midnight */
+  --color-bg-primary: #0B0E14; /* Deep Obsidian */
+  --color-bg-secondary: #0f131a;
+  --color-bg-tertiary: #161B22; /* Slate Grey Surfaces */
+  --color-bg-card: rgba(22, 27, 34, 0.9);
+  --color-bg-glass: rgba(22, 27, 34, 0.85);
 
-  --color-text-primary: #e4e4e7;
-  --color-text-secondary: #a1a1aa;
-  --color-text-muted: #71717a;
+  --color-text-primary: #f1f5f9; /* Slate 100 */
+  --color-text-secondary: #94a3b8; /* Slate 400 */
+  --color-text-muted: #64748b; /* Slate 500 */
 
-  --color-accent-primary: #6366f1;
-  --color-accent-secondary: #8b5cf6;
-  --color-accent-success: #10b981;
+  --color-accent-primary: #00FF41; /* Matrix Green */
+  --color-accent-secondary: #3FB1FE; /* System Blue */
+  --color-accent-success: #50FA7B; /* Bright Green (P2) */
   --color-accent-warning: #f59e0b;
-  --color-accent-error: #ef4444;
-  --color-accent-info: #3b82f6;
+  --color-accent-error: #FF5F5F; /* Soft Red (P1) */
+  --color-accent-info: #8BE9FD; /* Cyan (P3) */
+  --color-accent-purple: #BD93F9; /* Purple (P4) */
 
-  --color-border-main: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.2);
+  --color-border-main: #30363D; /* Thin Industrial Borders */
+  --color-border-hover: #4b5563;
 
-  /* Shadows */
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  /* Shadows - Outer Glow for active */
+  --shadow-glow: 0 0 15px rgba(0, 255, 65, 0.5); /* Matrix green glow */
+  --shadow-glow-blue: 0 0 15px rgba(63, 177, 254, 0.5); /* System blue glow */
 
   /* Animations */
   --animate-float: float 6s ease-in-out infinite;
+  
+  /* Font Families */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -37,13 +43,16 @@
 /* Base Styles */
 body {
   @apply bg-bg-primary text-text-primary min-h-screen text-[14px];
-  background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-tertiary) 100%);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--font-sans);
+  /* Dot grid pattern background simulating logic analyzer */
+  background-color: var(--color-bg-primary);
+  background-image: radial-gradient(var(--color-border-main) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-/* Common Utility Classes for Glassmorphism */
+/* Common Utility Classes for Brutalist/Industrial */
 @utility glass-panel {
-  @apply bg-bg-glass backdrop-blur-md border border-border-main rounded-xl p-4;
+  @apply bg-bg-glass backdrop-blur-md border border-border-main rounded p-4;
 }
 
 @utility glass-header {
@@ -54,25 +63,46 @@ body {
   @apply bg-bg-glass backdrop-blur-md border-t border-border-main flex items-center justify-center text-text-muted text-xs h-[40px];
 }
 
-/* Scrollbar Utility */
+/* Scrollbar Utility for Terminal look */
 @utility scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-accent-primary) var(--color-bg-secondary);
+  scrollbar-color: var(--color-border-main) var(--color-bg-primary);
 }
 
 @utility scrollbar-webkit {
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
   }
   &::-webkit-scrollbar-track {
     background: var(--color-bg-primary);
+    border-left: 1px solid var(--color-border-main);
   }
   &::-webkit-scrollbar-thumb {
-    background: var(--color-accent-primary);
-    border-radius: 3px;
+    background: var(--color-border-main);
+    border-radius: 0px; /* Brutalist sharp corners */
   }
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--color-accent-secondary);
+    background: var(--color-border-hover);
   }
+}
+
+/* CRT Scanline effect overlay */
+.scanline-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.1)
+  );
+  background-size: 100% 4px; /* Matches scanline density */
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.5;
 }
