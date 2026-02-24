@@ -167,7 +167,7 @@ function performTick(state: SchedulerState): SchedulerState {
 
     // 1. Check for newly arrived processes
     const newlyArrived = updatedProcesses.filter(
-        p => p.arrivalTime === state.clock && p.state === 'NEW'
+        p => p.arrivalTime <= state.clock && p.state === 'NEW'
     );
 
     newlyArrived.forEach(process => {
@@ -515,6 +515,13 @@ function performTick(state: SchedulerState): SchedulerState {
         clockHistory: [...state.clockHistory, newClock],
     };
 
+    if (newState.algorithm === 'MLFQ') {
+        newState.mlfqQueues = state.mlfqQueues.map(q => ({
+            ...q,
+            processes: updatedProcesses.filter(p => p.currentQueueLevel === q.level && p.state === 'READY')
+        }));
+    }
+
     // Update metrics
     newState.metrics = calculateMetrics(newState);
 
@@ -524,6 +531,12 @@ function performTick(state: SchedulerState): SchedulerState {
 
     if (allCompleted) {
         newState.simulationState = 'STOPPED';
+        if (newState.interactionMode === 'PREDICT_VERIFY') {
+            newState.predictionState = {
+                ...newState.predictionState,
+                showResults: true
+            };
+        }
     }
 
     return newState;
@@ -699,6 +712,8 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                         processId: p.id,
                         processName: p.name,
                         predictedCT: null,
+                        predictedWT: null,
+                        predictedTAT: null,
                     })),
                     submitted: false,
                     showResults: false,
@@ -712,7 +727,7 @@ function schedulerReducer(state: SchedulerState, action: SchedulerAction): Sched
                     ...state.predictionState,
                     predictions: state.predictionState.predictions.map(p =>
                         p.processId === action.payload.processId
-                            ? { ...p, predictedCT: action.payload.predictedCT }
+                            ? { ...p, [action.payload.field]: action.payload.value }
                             : p
                     ),
                 },
@@ -772,7 +787,7 @@ interface SchedulerContextType {
     // Test/Prediction Mode
     setInteractionMode: (mode: InteractionMode) => void;
     initPredictions: () => void;
-    setPrediction: (processId: string, predictedCT: number | null) => void;
+    setPrediction: (processId: string, field: 'predictedCT' | 'predictedWT' | 'predictedTAT', value: number | null) => void;
     setAWTPrediction: (awt: number | null) => void;
     submitPredictions: () => void;
     showPredictionResults: () => void;
@@ -866,8 +881,8 @@ export function SchedulerProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'INIT_PREDICTIONS' });
     }, []);
 
-    const setPrediction = useCallback((processId: string, predictedCT: number | null) => {
-        dispatch({ type: 'SET_PREDICTION', payload: { processId, predictedCT } });
+    const setPrediction = useCallback((processId: string, field: 'predictedCT' | 'predictedWT' | 'predictedTAT', value: number | null) => {
+        dispatch({ type: 'SET_PREDICTION', payload: { processId, field, value } });
     }, []);
 
     const setAWTPrediction = useCallback((awt: number | null) => {

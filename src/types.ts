@@ -142,6 +142,8 @@ export interface Prediction {
     processId: string;
     processName: string;
     predictedCT: number | null;  // Completion Time
+    predictedWT: number | null;  // Waiting Time
+    predictedTAT: number | null; // Turnaround Time
 }
 
 // Prediction state for Predict & Verify mode
@@ -156,10 +158,23 @@ export interface PredictionState {
 export interface ScoreBreakdown {
     processId: string;
     processName: string;
+
     predictedCT: number | null;
     actualCT: number | null;
-    difference: number | null;
-    points: number;
+    diffCT: number | null;
+    pointsCT: number;
+
+    predictedWT: number | null;
+    actualWT: number | null;
+    diffWT: number | null;
+    pointsWT: number;
+
+    predictedTAT: number | null;
+    actualTAT: number | null;
+    diffTAT: number | null;
+    pointsTAT: number;
+
+    points: number; // sum of CT, WT, TAT points
 }
 
 // Prediction results after simulation
@@ -227,7 +242,7 @@ export type SchedulerAction =
     | { type: 'LOAD_PRESET'; payload: Process[] }
     // Test/Prediction Mode actions
     | { type: 'SET_INTERACTION_MODE'; payload: InteractionMode }
-    | { type: 'SET_PREDICTION'; payload: { processId: string; predictedCT: number | null } }
+    | { type: 'SET_PREDICTION'; payload: { processId: string; field: 'predictedCT' | 'predictedWT' | 'predictedTAT'; value: number | null } }
     | { type: 'SET_AWT_PREDICTION'; payload: number | null }
     | { type: 'SUBMIT_PREDICTIONS' }
     | { type: 'INIT_PREDICTIONS' }

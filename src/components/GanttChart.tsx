@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useScheduler } from '../context/SchedulerContext';
 import type { GanttEntry } from '../types';
 
@@ -7,6 +7,24 @@ const CELL_WIDTH = 40;
 export function GanttChart() {
     const { state } = useScheduler();
     const containerRef = useRef<HTMLDivElement>(null);
+    const { metrics, clock } = state;
+
+    const [cpuHistory, setCpuHistory] = useState<number[]>([]);
+    const [waitHistory, setWaitHistory] = useState<number[]>([]);
+
+    // Track metrics history for sparklines and background
+    useEffect(() => {
+        if (state.simulationState === 'STOPPED' || clock === 0) {
+            setCpuHistory([]);
+            setWaitHistory([]);
+            return;
+        }
+
+        if (state.simulationState === 'RUNNING' || state.simulationState === 'STEP') {
+            setCpuHistory(prev => [...prev.slice(-20), metrics.cpuUtilization]);
+            setWaitHistory(prev => [...prev.slice(-20), metrics.avgWaitingTime]);
+        }
+    }, [clock, metrics.cpuUtilization, metrics.avgWaitingTime, state.simulationState]);
 
     // Auto-scroll to current time
     useEffect(() => {
@@ -65,17 +83,111 @@ export function GanttChart() {
         );
     };
 
+    const formatNumber = (num: number, decimals: number = 2): string => num.toFixed(decimals);
+
+    const getUtilizationColor = (util: number): string => {
+        if (util >= 80) return 'text-accent-error';
+        if (util >= 50) return 'text-accent-warning';
+        return 'text-accent-success';
+    };
+
+    const renderHeaderSparkline = (data: number[], color: string, maxVal: number = 100) => {
+        if (data.length < 2) return null;
+
+        const actualMax = Math.max(...data, maxVal);
+        const w = 40;
+        const h = 16;
+
+        const points = data.map((val, i) => {
+            const x = (i / (data.length - 1)) * w;
+            const y = h - ((val / actualMax) * h);
+            return `${x},${y}`;
+        }).join(' ');
+
+        return (
+            <svg width={w} height={h} className="opacity-80">
+                <polyline fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" points={points} />
+            </svg>
+        );
+    };
+
+    const renderBackgroundAreaGraph = () => {
+        if (cpuHistory.length < 2) return null;
+
+        const w = Math.max((maxTime + 1) * CELL_WIDTH, containerRef.current?.clientWidth || 0);
+        const h = state.cores.length * 60 + 32; // core rows + time axis height
+
+        // Map cpu history to the entire width of the chart 
+        const points = cpuHistory.map((val, i) => {
+            const x = (i / (cpuHistory.length - 1)) * w;
+            const y = h - ((val / 100) * h);
+            return `${x},${y}`;
+        });
+
+        const areaPoints = `0,${h} ${points.join(' ')} ${w},${h}`;
+
+        return (
+            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.03] z-0" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="cpuGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#00FF41" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#00FF41" stopOpacity="0" />
+                    </linearGradient>
+                </defs>
+                <polygon points={areaPoints} fill="url(#cpuGradient)" />
+                <polyline fill="none" stroke="#00FF41" strokeWidth="1" strokeOpacity="0.5" points={points.join(' ')} />
+            </svg>
+        );
+    };
+
     return (
-        <div className="p-6 flex flex-col overflow-hidden bg-[#161B22] border border-[#30363D] rounded-md shadow-2xl relative font-sans">
-            {/* Scanline overlay for the panel */}
-            <div className="scanline-overlay"></div>
+        <div className="glass-panel p-0 flex flex-col overflow-hidden bg-bg-primary rounded-md shadow-2xl relative font-sans">
+            {/* Status Ribbon Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border-main bg-bg-secondary z-20 relative shadow-md">
+                <h3 className="flex items-center gap-2 font-mono font-bold text-sm tracking-widest text-accent-primary uppercase">
+                    <span className="w-2 h-2 rounded-full bg-accent-primary animate-pulse shadow-[0_0_8px_#00FF41]"></span>
+                    Live Analysis
+                </h3>
 
-            <h3 className="flex items-center gap-2 mb-4 font-mono font-bold text-sm tracking-widest text-accent-primary uppercase border-b border-[#30363D] pb-3 z-10 relative bg-[#161B22]">
-                <span className="animate-pulse">▶</span> GANTT_CHART_ANALYSIS
-            </h3>
+                <div className="flex items-center gap-6">
+                    {/* CPU Badge */}
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-md">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-text-muted uppercase tracking-wider font-bold">CPU Util</span>
+                            <span className={`text-sm font-mono font-bold ${getUtilizationColor(metrics.cpuUtilization)}`}>
+                                {formatNumber(metrics.cpuUtilization, 1)}%
+                            </span>
+                        </div>
+                        {renderHeaderSparkline(cpuHistory, metrics.cpuUtilization >= 80 ? '#FF5F5F' : metrics.cpuUtilization >= 50 ? '#f59e0b' : '#50FA7B')}
+                    </div>
 
-            <div className="flex-1 overflow-hidden rounded-sm border border-[#30363D] bg-[#0B0E14] flex flex-col relative z-10">
-                <div className="overflow-x-auto scrollbar-webkit" ref={containerRef}>
+                    {/* Wait Badge */}
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-md">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-text-muted uppercase tracking-wider font-bold">Avg Wait</span>
+                            <span className="text-sm font-mono font-bold text-accent-warning">
+                                {formatNumber(metrics.avgWaitingTime)}
+                            </span>
+                        </div>
+                        {renderHeaderSparkline(waitHistory, '#f59e0b', Math.max(10, ...waitHistory))}
+                    </div>
+
+                    {/* Throughput Badge */}
+                    <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-3 py-1.5 rounded-md">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-text-muted uppercase tracking-wider font-bold">Throughput</span>
+                            <span className="text-sm font-mono font-bold text-accent-info">
+                                {formatNumber(metrics.throughput)}/t
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-hidden bg-bg-primary flex flex-col relative z-10 w-full">
+                {renderBackgroundAreaGraph()}
+
+                <div className="overflow-x-auto scrollbar-webkit relative z-10" ref={containerRef}>
                     <div className="min-w-fit" style={{ width: `${(maxTime + 1) * CELL_WIDTH + 100}px` }}>
                         {/* Time axis */}
                         <div className="flex border-b border-[#30363D] bg-[#161B22] h-8 sticky top-0 z-20">
@@ -105,7 +217,7 @@ export function GanttChart() {
             </div>
 
             {/* Legend */}
-            <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono text-[#94a3b8] relative z-10">
+            <div className="p-4 flex flex-wrap gap-4 text-xs font-mono text-text-muted relative z-20 bg-bg-secondary/50 border-t border-border-main">
                 {state.processes.map(process => (
                     <div key={process.id} className="flex items-center gap-2">
                         <div

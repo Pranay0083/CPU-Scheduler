@@ -1,44 +1,73 @@
 import { useScheduler } from '../context/SchedulerContext';
-import type { PredictionResults, ScoreBreakdown } from '../types';
+import type { Prediction, PredictionResults, ScoreBreakdown, Process } from '../types';
 
 // Calculate prediction score
 function calculatePredictionResults(
-    predictions: { processId: string; processName: string; predictedCT: number | null }[],
-    processes: { id: string; completionTime: number | null; waitTime: number }[],
+    predictions: Prediction[],
+    processes: Process[],
     predictedAWT: number | null
 ): PredictionResults {
     const breakdown: ScoreBreakdown[] = [];
     let totalScore = 0;
     let maxScore = 0;
 
+    const getPoints = (diff: number | null) => {
+        if (diff === null) return 0;
+        if (diff === 0) return 10;
+        if (diff <= 1) return 5;
+        if (diff <= 3) return 2;
+        return 0;
+    };
+
     // Score each process prediction
     predictions.forEach(pred => {
         const process = processes.find(p => p.id === pred.processId);
-        const actualCT = process?.completionTime ?? null;
-        let points = 0;
-        let difference: number | null = null;
 
+        const actualCT = process?.completionTime ?? null;
+        const actualWT = process ? process.waitTime : null;
+        const actualTAT = process?.state === 'TERMINATED' ? process.turnaroundTime : null;
+
+        let diffCT: number | null = null;
+        let pointsCT = 0;
         if (pred.predictedCT !== null && actualCT !== null) {
-            difference = Math.abs(pred.predictedCT - actualCT);
-            if (difference === 0) {
-                points = 10; // Exact match
-            } else if (difference <= 1) {
-                points = 5; // Within ±1
-            } else if (difference <= 3) {
-                points = 2; // Within ±3
-            }
+            diffCT = Math.abs(pred.predictedCT - actualCT);
+            pointsCT = getPoints(diffCT);
         }
 
-        maxScore += 10;
-        totalScore += points;
+        let diffWT: number | null = null;
+        let pointsWT = 0;
+        if (pred.predictedWT !== null && actualWT !== null) {
+            diffWT = Math.abs(pred.predictedWT - actualWT);
+            pointsWT = getPoints(diffWT);
+        }
+
+        let diffTAT: number | null = null;
+        let pointsTAT = 0;
+        if (pred.predictedTAT !== null && actualTAT !== null) {
+            diffTAT = Math.abs(pred.predictedTAT - actualTAT);
+            pointsTAT = getPoints(diffTAT);
+        }
+
+        const processPoints = pointsCT + pointsWT + pointsTAT;
+        maxScore += 30; // 10 + 10 + 10
+        totalScore += processPoints;
 
         breakdown.push({
             processId: pred.processId,
             processName: pred.processName,
             predictedCT: pred.predictedCT,
             actualCT,
-            difference,
-            points,
+            diffCT,
+            pointsCT,
+            predictedWT: pred.predictedWT,
+            actualWT,
+            diffWT,
+            pointsWT,
+            predictedTAT: pred.predictedTAT,
+            actualTAT,
+            diffTAT,
+            pointsTAT,
+            points: processPoints,
         });
     });
 
@@ -133,9 +162,9 @@ export function Scorecard() {
                         <thead>
                             <tr className="bg-white/5 text-white/50 text-xs uppercase tracking-wider border-b border-white/10">
                                 <th className="px-4 py-3 font-medium">Process</th>
-                                <th className="px-4 py-3 font-medium">Predicted CT</th>
-                                <th className="px-4 py-3 font-medium">Actual CT</th>
-                                <th className="px-4 py-3 font-medium">Diff</th>
+                                <th className="px-4 py-3 font-medium">CT (P/A)</th>
+                                <th className="px-4 py-3 font-medium">WT (P/A)</th>
+                                <th className="px-4 py-3 font-medium">TAT (P/A)</th>
                                 <th className="px-4 py-3 font-medium text-right">Points</th>
                             </tr>
                         </thead>
@@ -143,22 +172,27 @@ export function Scorecard() {
                             {results.breakdown.map(row => (
                                 <tr key={row.processId} className={`transition-colors hover:bg-white/5`}>
                                     <td className="px-4 py-3">{row.processName}</td>
-                                    <td className="px-4 py-3 text-white/70">{row.predictedCT ?? '-'}</td>
-                                    <td className="px-4 py-3 text-white/70">{row.actualCT ?? '-'}</td>
-                                    <td className={`px-4 py-3 ${getDifferenceClass(row.difference)}`}>
-                                        {row.difference !== null ? `±${row.difference}` : '-'}
+                                    <td className="px-4 py-3 text-white/70">
+                                        {row.predictedCT ?? '-'}/{row.actualCT ?? '-'} <span className={`text-[10px] ${getDifferenceClass(row.diffCT)}`}>({row.diffCT !== null ? `±${row.diffCT}` : '-'})</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-white/70">
+                                        {row.predictedWT ?? '-'}/{row.actualWT ?? '-'} <span className={`text-[10px] ${getDifferenceClass(row.diffWT)}`}>({row.diffWT !== null ? `±${row.diffWT}` : '-'})</span>
+                                    </td>
+                                    <td className="px-4 py-3 text-white/70">
+                                        {row.predictedTAT ?? '-'}/{row.actualTAT ?? '-'} <span className={`text-[10px] ${getDifferenceClass(row.diffTAT)}`}>({row.diffTAT !== null ? `±${row.diffTAT}` : '-'})</span>
                                     </td>
                                     <td className="px-4 py-3 text-right">
-                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${getScoreClass(row.points, 10)}`}>
+                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${getScoreClass(row.points, 30)}`}>
                                             +{row.points}
                                         </span>
                                     </td>
                                 </tr>
                             ))}
                             <tr className="bg-white/[0.02] font-bold">
-                                <td className="px-4 py-4 text-accent-secondary" colSpan={1}>AWT</td>
-                                <td className="px-4 py-4 text-white/70">{results.predictedAWT?.toFixed(2) ?? '-'}</td>
-                                <td className="px-4 py-4 text-white/70">{results.actualAWT.toFixed(2)}</td>
+                                <td className="px-4 py-4 text-accent-secondary" colSpan={1}>AWT Prediction</td>
+                                <td className="px-4 py-4 text-white/70" colSpan={2}>
+                                    {results.predictedAWT?.toFixed(2) ?? '-'} / {results.actualAWT.toFixed(2)}
+                                </td>
                                 <td className={`px-4 py-4 ${getDifferenceClass(results.awtDifference)}`}>
                                     {results.awtDifference !== null ? `±${results.awtDifference.toFixed(2)}` : '-'}
                                 </td>
@@ -179,7 +213,7 @@ export function Scorecard() {
                     <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>&gt;3: +0</span>
                 </div>
 
-                <button 
+                <button
                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-bold shadow-lg hover:shadow-accent-primary/25 transition-all transform hover:-translate-y-1 active:translate-y-0"
                     onClick={reset}
                 >

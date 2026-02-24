@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useScheduler } from '../context/SchedulerContext';
 import { parseBurstPattern } from '../types';
 import type { Algorithm, CoreCount, SimulationSpeed } from '../types';
@@ -108,6 +109,7 @@ const PRESETS = [
 ];
 
 export function ControlPanel() {
+    const [isQuickLoadExpanded, setIsQuickLoadExpanded] = useState(false);
     const {
         state,
         setAlgorithm,
@@ -115,17 +117,12 @@ export function ControlPanel() {
         setTimeQuantum,
         setSpeed,
         toggleAging,
-        start,
-        pause,
-        step,
-        reset,
         clearProcesses,
         addProcess,
         setInteractionMode,
     } = useScheduler();
 
     const isRunning = state.simulationState === 'RUNNING';
-    const canStart = state.processes.length > 0;
 
     const loadPreset = (preset: typeof PRESETS[0]) => {
         clearProcesses();
@@ -244,55 +241,30 @@ export function ControlPanel() {
             </div>
 
             <div className="flex flex-col gap-2 border-b border-border-main pb-4">
-                <h3 className="text-xs font-bold text-text-secondary uppercase tracking-wider">Presets</h3>
-                <select
-                    onChange={(e) => {
-                        const preset = PRESETS.find(p => p.name === e.target.value);
-                        if (preset) loadPreset(preset);
-                    }}
-                    disabled={isRunning}
-                    className="w-full bg-bg-secondary border border-border-main rounded-md p-2 text-text-primary focus:border-accent-primary focus:outline-none"
-                    defaultValue=""
-                    title="Load Preset Scenario"
+                <button
+                    onClick={() => setIsQuickLoadExpanded(!isQuickLoadExpanded)}
+                    className="flex items-center justify-between text-xs font-bold text-text-secondary uppercase tracking-wider hover:text-text-primary transition-colors text-left w-full"
                 >
-                    <option value="" disabled>Load preset...</option>
-                    {PRESETS.map(preset => (
-                        <option key={preset.name} value={preset.name}>
-                            {preset.name}
-                        </option>
-                    ))}
-                </select>
+                    Quick Load
+                    <span className="text-text-muted">{isQuickLoadExpanded ? '▲' : '▼'}</span>
+                </button>
+                {isQuickLoadExpanded && (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                        {PRESETS.map(preset => (
+                            <button
+                                key={preset.name}
+                                onClick={() => loadPreset(preset)}
+                                disabled={isRunning}
+                                className="px-2 py-1 text-[10px] uppercase font-bold text-text-muted bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={`Load ${preset.name}`}
+                            >
+                                {preset.name}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-2">
-                <button
-                    onClick={isRunning ? pause : start}
-                    disabled={!canStart && !isRunning}
-                    className={`col-span-2 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 border ${isRunning ? 'bg-accent-warning/20 border-accent-warning text-accent-warning hover:bg-accent-warning/30' : 'bg-accent-success/20 border-accent-success text-accent-success hover:bg-accent-success/30 disabled:opacity-50 disabled:cursor-not-allowed'}`}
-                >
-                    {isRunning ? '⏸ Pause' : '▶ Play'}
-                </button>
-
-                <button
-                    onClick={step}
-                    disabled={isRunning || !canStart}
-                    className="py-2 rounded-lg font-bold transition flex items-center justify-center gap-1 border bg-white/5 border-border-main hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    ⏭ Step
-                </button>
-
-                <button
-                    onClick={reset}
-                    className="py-2 rounded-lg font-bold transition flex items-center justify-center gap-1 border bg-white/5 border-border-main hover:bg-white/10 hover:text-accent-error"
-                >
-                    ↺ Reset
-                </button>
-            </div>
-            {/* 
-            <div className="mt-4 flex flex-col items-center justify-center p-4 bg-bg-secondary/50 rounded-lg border border-border-main">
-                <span className="text-xs text-text-secondary uppercase tracking-widest mb-1">Clock</span>
-                <span className="text-4xl font-mono font-bold text-accent-info">{state.clock}</span>
-            </div> */}
         </div>
     );
 }
