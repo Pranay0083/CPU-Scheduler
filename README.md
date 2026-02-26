@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# CPU Scheduling Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive, story-driven web application designed to help students and developers visualize, understand, and interact with Operating System CPU scheduling algorithms. 
 
-Currently, two official plugins are available:
+![CPU Scheduling Visualizer](./public/simulator-screenshot.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+### Supported Scheduling Algorithms
+The visualizer models the following algorithms (with predefined rulebooks and preemptive/non-preemptive variations):
+* **First-Come, First-Served (FCFS)**
+* **Shortest Job First (SJF)**
+* **Shortest Remaining Time First (SRTF)**
+* **Round Robin (RR)**
+* **Priority Scheduling (Preemptive & Non-Preemptive)** with optional Priority Aging
+* **Multi-Level Feedback Queue (MLFQ)**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### � Story-Driven Narrative (The Core)
+The Home page acts as an interactive textbook, introducing the complex concepts of Operating Systems step-by-step:
+* **The Rulebook:** Understand the metrics—Turnaround Time, Response Time, and Wait Time.
+* **Preemption:** Learn the difference between letting a process finish and cutting it off mid-execution.
+* **Algorithm Chapters:** Dedicated visual chapters explaining the evolution of scheduling, from simple FCFS up to the intelligent MLFQ. Each chapter explains the "why" and "how" of the CPU's decisions.
 
-## Expanding the ESLint configuration
+### 🛠️ Interactive Sandbox Mode
+* **Live Sandbox:** Step away from the theory and test the algorithms yourself. 
+* **Process Drafting Studio:** Create complex processes with varying arrival times, burst durations, and priority levels.
+* **Real-time Canvas:** Watch the CPU execute your processes on an interactive Gantt chart.
+* **Live Stats & Kernel Log:** View live metrics (Utilization, Throughput, Checkpoints) and a scrollable kernel log detailing context switches, IO waits, and process completions.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🏗️ Tech Stack
+* **Frontend Component Setup:** React 19, TypeScript, Vite
+* **Routing:** React Router v7
+* **Styling:** Tailwind CSS v4 (featuring hand-drawn borders, custom CSS variables, and unique OS-themed typography)
+* **Animations:** Framer Motion for smooth, hardware-accelerated UI transitions
+* **Icons:** Lucide React
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📦 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
+Make sure you have Node.js (v18+) and npm installed.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Installation
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. Clone the repository:
+   \`\`\`bash
+   git clone https://github.com/Pranay0083/CPU-Scheduler.git
+   cd CPU-Scheduler
+   \`\`\`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. Install dependencies:
+   \`\`\`bash
+   npm install
+   \`\`\`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. Start the development server:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
+
+4. Open your browser and navigate to \`http://localhost:5173\`
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/Pranay0083/CPU-Scheduler/issues).
+
+## 📄 License
+This project is open-source and available under the MIT License.
