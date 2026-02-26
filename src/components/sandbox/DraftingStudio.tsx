@@ -48,7 +48,7 @@ export function DraftingStudio({
     setDraftArrival,
     coresCount,
     setCoresCount,
-    // loadPreset,
+    loadPreset,
     currentTime,
     algorithm,
     timeQuantum,
@@ -282,10 +282,10 @@ export function DraftingStudio({
                 </button>
             </div>
 
-            {/* <hr className="border-dashed border-[var(--grid-color)]" /> */}
+            <hr className="border-dashed border-[var(--grid-color)]" />
 
             {/* Bottom: Quick Load Menu */}
-            {/* <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
                 <h3 className="font-architect text-xl text-[var(--cpu-stroke)]">Quick Load</h3>
                 <div className="grid grid-cols-2 gap-3">
                     <button

@@ -41,7 +41,7 @@ export function Sandbox() {
         setMlfqBoostInterval,
         addProcess,
         setCoresCount,
-        // loadPreset,
+        loadPreset,
         reset,
         stepForward,
         draftBurst,
@@ -105,7 +105,7 @@ export function Sandbox() {
                         setDraftArrival={setDraftArrival}
                         coresCount={cores.length}
                         setCoresCount={setCoresCount}
-                        // loadPreset={loadPreset}
+                        loadPreset={loadPreset}
                         currentTime={time}
                         algorithm={algorithm}
                         timeQuantum={timeQuantum}
