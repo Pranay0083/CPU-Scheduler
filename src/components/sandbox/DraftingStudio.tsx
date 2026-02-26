@@ -48,7 +48,7 @@ export function DraftingStudio({
     setDraftArrival,
     coresCount,
     setCoresCount,
-    loadPreset,
+    // loadPreset,
     currentTime,
     algorithm,
     timeQuantum,
