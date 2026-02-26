@@ -314,7 +314,7 @@ export function DraftingStudio({
                         <span className="text-xs font-bold text-[var(--cpu-stroke)]">Starvation Case</span>
                     </button>
                 </div>
-            </div> */}
+            </div>
         </div>
     );
 }
