@@ -23,16 +23,12 @@ interface SandboxCanvasProps {
 }
 
 export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPriority, time, starvationThreshold }: SandboxCanvasProps) {
-    const readyQueue = processes.filter(p => (p.status === 'ready' && p.arrivalTime <= time) || p.status === 'running');
+    const readyQueue = processes.filter(p => p.status === 'ready' && p.arrivalTime <= time);
 
-    // Sort queue visually: Running tasks first, then ready ones
-    const displayQueue = [...readyQueue].sort((a, b) => {
-        if (a.status === 'running' && b.status !== 'running') return -1;
-        if (a.status !== 'running' && b.status === 'running') return 1;
-        return a.arrivalTime - b.arrivalTime;
-    });
+    // Sort queue visually by arrival time
+    const displayQueue = [...readyQueue].sort((a, b) => a.arrivalTime - b.arrivalTime);
 
-    const nextPidId = displayQueue.find(p => p.status === 'ready')?.id;
+    const nextPidId = displayQueue[0]?.id;
 
     return (
         <div className="w-full h-full flex flex-row items-center justify-center gap-16 relative">
@@ -121,10 +117,9 @@ export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPr
                                 {laneQueue.map((p) => (
                                     <motion.div
                                         key={p.id}
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.8, x: -50 }}
-                                        animate={{ opacity: 1, scale: isHigh ? 1 : 0.85, x: 0 }}
-                                        className={p.status === 'running' ? 'opacity-30 grayscale pointer-events-none' : 'cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform'}
+                                        layoutId={`p-wrapper-${p.id}`}
+                                        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                        className="cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform relative flex flex-col items-center"
                                         title={`Burst: ${p.burstTime}ms | Prio: ${p.priority} | Arr: ${p.arrivalTime}`}
                                     >
                                         <SandboxPidTag pid={p.id} colorIndex={p.index} />
@@ -176,10 +171,9 @@ export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPr
                             return (
                                 <motion.div
                                     key={p.id}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.8, x: -50 }}
-                                    animate={{ opacity: 1, scale: 1, x: 0 }}
-                                    className={p.status === 'running' ? 'opacity-30 grayscale pointer-events-none' : 'cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform'}
+                                    layoutId={`p-wrapper-${p.id}`}
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                    className="cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform relative flex flex-col items-center"
                                     title={`Burst: ${p.burstTime}ms | Prio: ${p.priority} | Arr: ${p.arrivalTime}`}
                                 >
                                     <SandboxPidTag
@@ -259,21 +253,29 @@ export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPr
                             <CpuCore progress={progress} activeColor={activeColor} />
 
                             {runningProc && (
-                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 scale-125 pointer-events-none w-full flex justify-center">
-                                    <SandboxPidTag
-                                        pid={runningProc.id}
-                                        priority={algorithm === 'Priority' ? runningProc.priority : undefined}
-                                        colorIndex={runningProc.index}
-                                    />
-                                    <motion.div
-                                        className="absolute -bottom-6 w-full text-center text-xs font-mono font-bold"
-                                        animate={{ opacity: [1, 0.5, 1] }}
-                                        transition={{ duration: 1, repeat: Infinity }}
-                                        style={{ color: activeColor }}
-                                    >
-                                        {runningProc.remainingTime}ms
-                                    </motion.div>
-                                </div>
+                                <motion.div
+                                    key={`running-${runningProc.id}`}
+                                    layoutId={`p-wrapper-${runningProc.id}`}
+                                    className="absolute inset-0 z-20 pointer-events-none flex flex-col items-center justify-center"
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                    style={{ zIndex: 50 }}
+                                >
+                                    <div className="scale-125 relative">
+                                        <SandboxPidTag
+                                            pid={runningProc.id}
+                                            priority={algorithm === 'Priority' ? runningProc.priority : undefined}
+                                            colorIndex={runningProc.index}
+                                        />
+                                        <motion.div
+                                            className="absolute -bottom-6 w-full text-center text-xs font-mono font-bold"
+                                            animate={{ opacity: [1, 0.5, 1] }}
+                                            transition={{ duration: 1, repeat: Infinity }}
+                                            style={{ color: activeColor }}
+                                        >
+                                            {runningProc.remainingTime}ms
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
                             )}
                         </div>
                     );
