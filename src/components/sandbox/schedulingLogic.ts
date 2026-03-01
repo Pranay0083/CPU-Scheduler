@@ -21,7 +21,7 @@ export function runSchedulerTick(
     let processes = currentProcesses.map(p => ({ ...p }));
     let cores = currentCores.map(c => ({ ...c }));
 
-    // 2. Identify newly arrived & Apply Aging
+    // 2. Identify newly arrived & Apply Aging & Track Wait Time
     processes.forEach(p => {
         if (p.arrivalTime === time && p.status !== 'completed' && p.status !== 'running') {
             p.status = 'ready';
@@ -34,6 +34,11 @@ export function runSchedulerTick(
             if (waitedTicks > 0 && waitedTicks % agingInterval === 0 && p.priority > 1) {
                 p.priority -= 1;
             }
+        }
+
+        // Track readyWaitTime for Starvation Visualization
+        if (p.status === 'ready' && p.arrivalTime <= time) {
+            p.readyWaitTime = (p.readyWaitTime || 0) + 1;
         }
     });
 
@@ -174,6 +179,7 @@ export function runSchedulerTick(
                     nextProc.startTime = time;
                 }
                 nextProc.timeQuantumUsed = 0;
+                nextProc.readyWaitTime = 0; // Reset starvation wait time when picked up
                 core.currentProcessId = nextProc.id;
             }
         }

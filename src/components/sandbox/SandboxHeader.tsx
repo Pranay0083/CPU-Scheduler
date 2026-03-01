@@ -10,6 +10,8 @@ interface SandboxHeaderProps {
     setIsPlaying: (playing: boolean) => void;
     speedMultiplier: number;
     setSpeedMultiplier: (speed: number) => void;
+    starvationThreshold: number;
+    setStarvationThreshold: (threshold: number) => void;
     stepForward: () => void;
 }
 
@@ -22,6 +24,8 @@ export function SandboxHeader({
     setIsPlaying,
     speedMultiplier,
     setSpeedMultiplier,
+    starvationThreshold,
+    setStarvationThreshold,
     stepForward
 }: SandboxHeaderProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -118,6 +122,19 @@ export function SandboxHeader({
                     />
                 </div>
 
+                {/* Starvation Setting (Only shown for algorithms susceptible to it) */}
+                {(algorithm === 'SJF' || algorithm === 'SRTF' || algorithm === 'Priority') && (
+                    <div className="flex items-center gap-3 border-l-2 border-dashed border-[var(--grid-color)] pl-6">
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="text-xs font-architect uppercase opacity-50 whitespace-nowrap">Starve Ticks</span>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setStarvationThreshold(Math.max(5, starvationThreshold - 5))} className="px-1 text-red-500 font-bold hover:bg-[var(--tag-bg)]">-</button>
+                                <span className="font-mono text-sm w-4 text-center">{starvationThreshold}</span>
+                                <button onClick={() => setStarvationThreshold(starvationThreshold + 5)} className="px-1 text-green-500 font-bold hover:bg-[var(--tag-bg)]">+</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

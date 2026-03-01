@@ -19,9 +19,10 @@ interface SandboxCanvasProps {
     draftBurst: number;
     draftPriority: number;
     time: number;
+    starvationThreshold: number;
 }
 
-export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPriority, time }: SandboxCanvasProps) {
+export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPriority, time, starvationThreshold }: SandboxCanvasProps) {
     const readyQueue = processes.filter(p => (p.status === 'ready' && p.arrivalTime <= time) || p.status === 'running');
 
     // Sort queue visually: Running tasks first, then ready ones
@@ -166,21 +167,36 @@ export function SandboxCanvas({ processes, cores, algorithm, draftBurst, draftPr
                             </div>
                         )}
 
-                        {displayQueue.map((p) => (
-                            <motion.div
-                                key={p.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.8, x: -50 }}
-                                animate={{ opacity: 1, scale: 1, x: 0 }}
-                                className={p.status === 'running' ? 'opacity-30 grayscale pointer-events-none' : 'cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform'}
-                                title={`Burst: ${p.burstTime}ms | Prio: ${p.priority} | Arr: ${p.arrivalTime}`}
-                            >
-                                <SandboxPidTag pid={p.id} colorIndex={p.index} priority={algorithm === 'Priority' ? p.priority : undefined} isNext={p.id === nextPidId} />
-                                <div className="text-center mt-2 text-xs font-mono opacity-60 text-[var(--cpu-stroke)]">
-                                    {p.remainingTime}ms
-                                </div>
-                            </motion.div>
-                        ))}
+                        {displayQueue.map((p) => {
+                            const isStarvableAlg = ['SJF', 'SRTF', 'Priority'].includes(algorithm);
+                            const isStarving = isStarvableAlg && p.readyWaitTime ? p.readyWaitTime >= starvationThreshold : false;
+                            const starvationPercentage = isStarvableAlg && p.readyWaitTime ? Math.min(100, (p.readyWaitTime / starvationThreshold) * 100) : 0;
+                            const isConvoyed = algorithm === 'FCFS' && p.status === 'ready' && p.readyWaitTime ? p.readyWaitTime >= 5 && p.burstTime <= 5 : false;
+
+                            return (
+                                <motion.div
+                                    key={p.id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.8, x: -50 }}
+                                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                                    className={p.status === 'running' ? 'opacity-30 grayscale pointer-events-none' : 'cursor-grab active:cursor-grabbing hover:-translate-y-2 transition-transform'}
+                                    title={`Burst: ${p.burstTime}ms | Prio: ${p.priority} | Arr: ${p.arrivalTime}`}
+                                >
+                                    <SandboxPidTag
+                                        pid={p.id}
+                                        colorIndex={p.index}
+                                        priority={algorithm === 'Priority' ? p.priority : undefined}
+                                        isNext={p.id === nextPidId}
+                                        isStarving={isStarving}
+                                        starvationPercentage={starvationPercentage}
+                                        isConvoyed={isConvoyed}
+                                    />
+                                    <div className="text-center mt-2 text-xs font-mono opacity-60 text-[var(--cpu-stroke)]">
+                                        {p.remainingTime}ms
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
 
                         {/* Ghost Preview Process */}
                         <motion.div

@@ -20,6 +20,7 @@ export interface Process {
     status: 'ready' | 'running' | 'completed';
     lane?: number; // For MLFQ (0=High, 1=Med, 2=Low)
     timeQuantumUsed?: number; // For RR and MLFQ
+    readyWaitTime?: number; // Ticks spent waiting in ready state (for starvation visualization)
 }
 
 export interface Core {
@@ -48,6 +49,7 @@ export function useSandbox() {
     const [timeQuantum, setTimeQuantum] = useState(3);
     const [isAgingEnabled, setIsAgingEnabled] = useState(true);
     const [agingInterval, setAgingInterval] = useState(10);
+    const [starvationThreshold, setStarvationThreshold] = useState(10);
     const [mlfqQ0Quantum, setMlfqQ0Quantum] = useState(3);
     const [mlfqQ1Quantum, setMlfqQ1Quantum] = useState(5);
     const [mlfqBoostInterval, setMlfqBoostInterval] = useState(20);
@@ -68,10 +70,10 @@ export function useSandbox() {
 
     // -- STATE REFS FOR TICK SCOPE --
     // We use refs to avoid closing over stale state in the fast requestAnimationFrame loop
-    const stateRef = useRef({ time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval });
+    const stateRef = useRef({ time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, starvationThreshold, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval });
     useEffect(() => {
-        stateRef.current = { time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval };
-    }, [time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval]);
+        stateRef.current = { time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, starvationThreshold, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval };
+    }, [time, algorithm, processes, cores, segments, timeQuantum, isAgingEnabled, agingInterval, starvationThreshold, mlfqQ0Quantum, mlfqQ1Quantum, mlfqBoostInterval]);
 
     // -- METRICS --
     const completedProcesses = processes.filter(p => p.status === 'completed');
@@ -92,7 +94,8 @@ export function useSandbox() {
                 arrivalTime: Math.max(time, draftArrival),
                 status: 'ready',
                 lane: 0, // MLFQ high lane
-                timeQuantumUsed: 0
+                timeQuantumUsed: 0,
+                readyWaitTime: 0
             }
         ]);
         // Randomize next draft for fun
@@ -127,7 +130,7 @@ export function useSandbox() {
         });
     }, []);
 
-    const loadPreset = useCallback((preset: 'convoy' | 'starvation') => {
+    const loadPreset = useCallback((preset: 'convoy' | 'starvation' | 'sjf_normal' | 'rr_normal' | 'mlfq_basic' | 'cpu_heavy' | 'srtf_preempt' | 'burst_arrival') => {
         setIsPlaying(false);
         setTime(0);
         setSegments([]);
@@ -136,21 +139,72 @@ export function useSandbox() {
         if (preset === 'convoy') {
             setAlgorithm('FCFS');
             setProcesses([
-                { id: 'P1', index: 0, priority: 3, burstTime: 18, remainingTime: 18, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0 },
-                { id: 'P2', index: 1, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 1, status: 'ready', timeQuantumUsed: 0 },
-                { id: 'P3', index: 2, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0 },
-                { id: 'P4', index: 3, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 3, status: 'ready', timeQuantumUsed: 0 },
+                { id: 'P1', index: 0, priority: 3, burstTime: 18, remainingTime: 18, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 1, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P4', index: 3, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 3, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
             ]);
         } else if (preset === 'starvation') {
             setAlgorithm('Priority');
             setProcesses([
-                { id: 'P1', index: 0, priority: 5, burstTime: 10, remainingTime: 10, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0 }, // Low priority
-                { id: 'P2', index: 1, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0 }, // High priority
-                { id: 'P3', index: 2, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 4, status: 'ready', timeQuantumUsed: 0 },
-                { id: 'P4', index: 3, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 6, status: 'ready', timeQuantumUsed: 0 },
+                { id: 'P1', index: 0, priority: 5, burstTime: 10, remainingTime: 10, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // Low priority
+                { id: 'P2', index: 1, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // High priority
+                { id: 'P3', index: 2, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 4, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P4', index: 3, priority: 1, burstTime: 5, remainingTime: 5, arrivalTime: 6, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+            ]);
+        } else if (preset === 'sjf_normal') {
+            setAlgorithm('SJF');
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 8, remainingTime: 8, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 4, remainingTime: 4, arrivalTime: 1, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P4', index: 3, priority: 3, burstTime: 1, remainingTime: 1, arrivalTime: 3, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+            ]);
+        } else if (preset === 'rr_normal') {
+            setAlgorithm('RR');
+            setTimeQuantum(3);
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 6, remainingTime: 6, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 5, remainingTime: 5, arrivalTime: 1, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 4, remainingTime: 4, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P4', index: 3, priority: 3, burstTime: 7, remainingTime: 7, arrivalTime: 3, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+            ]);
+        } else if (preset === 'mlfq_basic') {
+            setAlgorithm('MLFQ');
+            setMlfqQ0Quantum(3);
+            setMlfqQ1Quantum(5);
+            setMlfqBoostInterval(25);
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 12, remainingTime: 12, arrivalTime: 0, status: 'ready', lane: 0, timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 4, remainingTime: 4, arrivalTime: 1, status: 'ready', lane: 0, timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 15, remainingTime: 15, arrivalTime: 2, status: 'ready', lane: 0, timeQuantumUsed: 0, readyWaitTime: 0 },
+            ]);
+        } else if (preset === 'cpu_heavy') {
+            setAlgorithm('RR');
+            setTimeQuantum(2);
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 20, remainingTime: 20, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // CPU Hog
+                { id: 'P2', index: 1, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // Short task
+                { id: 'P3', index: 2, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 5, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // Short task
+                { id: 'P4', index: 3, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 8, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 }, // Short task
+            ]);
+        } else if (preset === 'srtf_preempt') {
+            setAlgorithm('SRTF');
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 12, remainingTime: 12, arrivalTime: 0, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 3, remainingTime: 3, arrivalTime: 3, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 5, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+            ]);
+        } else if (preset === 'burst_arrival') {
+            setAlgorithm('FCFS');
+            setProcesses([
+                { id: 'P1', index: 0, priority: 3, burstTime: 4, remainingTime: 4, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P2', index: 1, priority: 3, burstTime: 2, remainingTime: 2, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P3', index: 2, priority: 3, burstTime: 6, remainingTime: 6, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
+                { id: 'P4', index: 3, priority: 3, burstTime: 3, remainingTime: 3, arrivalTime: 2, status: 'ready', timeQuantumUsed: 0, readyWaitTime: 0 },
             ]);
         }
-    }, [setAlgorithm, setIsPlaying, setTime, setSegments, setCores, setProcesses]);
+    }, [setAlgorithm, setIsPlaying, setTime, setSegments, setCores, setProcesses, setTimeQuantum, setMlfqQ0Quantum, setMlfqQ1Quantum, setMlfqBoostInterval]);
 
     const stepForward = useCallback(() => {
         // Expose a manual tick function
@@ -254,6 +308,7 @@ export function useSandbox() {
         timeQuantum,
         isAgingEnabled,
         agingInterval,
+        starvationThreshold,
         mlfqQ0Quantum,
         mlfqQ1Quantum,
         mlfqBoostInterval,
@@ -269,6 +324,7 @@ export function useSandbox() {
         setTimeQuantum,
         setIsAgingEnabled,
         setAgingInterval,
+        setStarvationThreshold,
         setMlfqQ0Quantum,
         setMlfqQ1Quantum,
         setMlfqBoostInterval,

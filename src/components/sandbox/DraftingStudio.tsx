@@ -11,7 +11,7 @@ interface DraftingStudioProps {
     setDraftArrival: (val: number) => void;
     coresCount: number;
     setCoresCount: (count: number) => void;
-    loadPreset: (preset: 'convoy' | 'starvation') => void;
+    loadPreset: (preset: 'convoy' | 'starvation' | 'sjf_normal' | 'rr_normal' | 'mlfq_basic' | 'cpu_heavy' | 'srtf_preempt' | 'burst_arrival') => void;
     currentTime: number;
     algorithm: string;
     timeQuantum: number;
@@ -287,6 +287,7 @@ export function DraftingStudio({
             {/* Bottom: Quick Load Menu */}
             <div className="flex flex-col gap-4">
                 <h3 className="font-architect text-xl text-[var(--cpu-stroke)]">Quick Load</h3>
+
                 <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={() => loadPreset('convoy')}
@@ -298,7 +299,7 @@ export function DraftingStudio({
                             <div className="w-2 h-2 bg-blue-400 hand-drawn-border"></div>
                             <div className="w-2 h-2 bg-green-400 hand-drawn-border"></div>
                         </div>
-                        <span className="text-xs font-bold text-[var(--cpu-stroke)]">Convoy Case</span>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Convoy Effect (FCFS)</span>
                     </button>
 
                     <button
@@ -311,7 +312,88 @@ export function DraftingStudio({
                             <div className="w-3 h-8 bg-purple-400 hand-drawn-border"></div>
                             <div className="w-3 h-8 border border-dashed border-purple-400"></div>
                         </div>
-                        <span className="text-xs font-bold text-[var(--cpu-stroke)]">Starvation Case</span>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Starvation (Priority)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('sjf_normal')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="A standard set of tasks with varying bursts. Shortest goes first."
+                    >
+                        <div className="w-full h-8 flex gap-1 items-end justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-2 h-2 bg-blue-400 hand-drawn-border"></div>
+                            <div className="w-3 h-4 bg-green-400 hand-drawn-border"></div>
+                            <div className="w-4 h-6 bg-yellow-400 hand-drawn-border"></div>
+                            <div className="w-5 h-8 bg-red-400 hand-drawn-border"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Typical Load (SJF)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('rr_normal')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="Uniform jobs to demonstrate fair time slicing."
+                    >
+                        <div className="w-full h-8 flex gap-1 items-end justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-3 h-6 bg-blue-400 hand-drawn-border"></div>
+                            <div className="w-3 h-5 bg-green-400 hand-drawn-border"></div>
+                            <div className="w-3 h-4 bg-yellow-400 hand-drawn-border"></div>
+                            <div className="w-3 h-7 bg-red-400 hand-drawn-border"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Fair Slice (RR)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('mlfq_basic')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="Demonstrates Queue demotion in MLFQ."
+                    >
+                        <div className="w-full h-8 flex flex-col gap-1 items-center justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-8 h-2 bg-blue-400 hand-drawn-border"></div>
+                            <div className="w-8 h-2 bg-green-400 hand-drawn-border opacity-70"></div>
+                            <div className="w-8 h-2 bg-red-400 hand-drawn-border opacity-40"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Demotion (MLFQ)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('cpu_heavy')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="One huge CPU hog mixed with tiny quick tasks."
+                    >
+                        <div className="w-full h-8 flex gap-1 items-end justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-8 h-8 bg-purple-400 hand-drawn-border"></div>
+                            <div className="w-1 h-2 bg-white hand-drawn-border"></div>
+                            <div className="w-1 h-2 bg-white hand-drawn-border"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">CPU Hog (RR)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('srtf_preempt')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="A long task gets repeatedly interrupted by shorter tasks."
+                    >
+                        <div className="w-full h-8 flex gap-1 items-end justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-6 h-4 bg-blue-400 hand-drawn-border"></div>
+                            <div className="w-3 h-8 bg-red-400 hand-drawn-border"></div>
+                            <div className="w-6 h-4 bg-blue-400 hand-drawn-border"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Preemption (SRTF)</span>
+                    </button>
+
+                    <button
+                        onClick={() => loadPreset('burst_arrival')}
+                        className="flex flex-col items-center gap-2 p-3 hand-drawn-border border-[var(--grid-color)] hover:border-[var(--cpu-stroke)] group transition-colors"
+                        title="Many tasks arriving at the exact same tick."
+                    >
+                        <div className="w-full h-8 flex gap-0 items-end justify-center opacity-60 group-hover:opacity-100 transition-opacity">
+                            <div className="w-3 h-4 bg-blue-400 hand-drawn-border"></div>
+                            <div className="w-3 h-6 bg-green-400 hand-drawn-border"></div>
+                            <div className="w-3 h-3 bg-red-400 hand-drawn-border"></div>
+                            <div className="w-3 h-8 bg-yellow-400 hand-drawn-border"></div>
+                        </div>
+                        <span className="text-xs font-bold text-[var(--cpu-stroke)] text-center">Simultaneous (FCFS)</span>
                     </button>
                 </div>
             </div>

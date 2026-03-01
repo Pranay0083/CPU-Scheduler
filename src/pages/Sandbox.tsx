@@ -23,6 +23,7 @@ export function Sandbox() {
         timeQuantum,
         isAgingEnabled,
         agingInterval,
+        starvationThreshold,
         mlfqQ0Quantum,
         mlfqQ1Quantum,
         mlfqBoostInterval,
@@ -36,6 +37,7 @@ export function Sandbox() {
         setTimeQuantum,
         setIsAgingEnabled,
         setAgingInterval,
+        setStarvationThreshold,
         setMlfqQ0Quantum,
         setMlfqQ1Quantum,
         setMlfqBoostInterval,
@@ -78,6 +80,8 @@ export function Sandbox() {
                         setIsPlaying={setIsPlaying}
                         speedMultiplier={speedMultiplier}
                         setSpeedMultiplier={setSpeedMultiplier}
+                        starvationThreshold={starvationThreshold}
+                        setStarvationThreshold={setStarvationThreshold}
                         stepForward={stepForward}
                     />
                 </div>
@@ -132,6 +136,7 @@ export function Sandbox() {
                         draftBurst={draftBurst}
                         draftPriority={draftPriority}
                         time={time}
+                        starvationThreshold={starvationThreshold}
                     />
                 </div>
 
