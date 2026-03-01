@@ -1,6 +1,9 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export function HeroCurtain() {
+    const navigate = useNavigate();
+
     return (
         <div className="relative w-full z-20 flex flex-col transition-colors duration-500">
             {/* Top solid portion */}
@@ -15,9 +18,16 @@ export function HeroCurtain() {
                     <p className="text-2xl md:text-3xl font-architect max-w-2xl mx-auto text-[var(--text-color)] opacity-90 mb-2">
                         A beautifully built journey from the curtain to the core.
                     </p>
-                    <p className="text-sm font-sans text-[var(--text-color)] opacity-50 uppercase tracking-[0.3em]">
+                    <p className="text-sm font-sans text-[var(--text-color)] opacity-50 uppercase tracking-[0.3em] mb-8">
                         Where logic meets the machine.
                     </p>
+
+                    <button
+                        onClick={() => navigate('/sandbox')}
+                        className="px-6 py-2 border-2 border-dashed border-[var(--text-color)] text-[var(--text-color)] font-architect text-lg hover:-translate-y-1 hover:bg-[var(--text-color)] hover:text-[var(--curtain-bg)] transition-all duration-300 opacity-80 hover:opacity-100"
+                    >
+                        Skip to Sandbox &rarr;
+                    </button>
                 </div>
 
                 {/* Scroll Prompt */}
